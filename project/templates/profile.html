@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="title">
+  Welcome, {{ name }}!
+</h1>
+
+<div class="calendar-container">
+    <div class="calendar">
+        <div class="calendar-header">
+            <button onclick="prevMonth()">&#9665;</button>
+            <h3 id="month-year"></h3>
+            <button onclick="nextMonth()">&#9655;</button>
+        </div>
+        <div class="weekdays">
+            <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+        </div>
+        <div class="days" id="calendar-days"></div>
+    </div>
+
+    <div class="event-section">
+        <button class="add-event-btn" onclick="openModal()">+ Add Event</button>
+        <h4>Upcoming Events</h4>
+        <div class="event-list" id="event-list"></div>
+    </div>
+</div>
+
+<!-- Event Modal -->
+<div class="modal" id="event-modal">
+    <h3>Add Event</h3>
+    <label>Date:</label>
+    <select id="event-day"></select>
+    <select id="event-month"></select>
+    <select id="event-year"></select>
+    <label>Event:</label>
+    <input type="text" id="event-input" placeholder="Enter event">
+    <div class="modal-buttons">
+        <button onclick="closeModal()">Cancel</button>
+        <button onclick="addEvent()">Save</button>
+    </div>
+</div>
+
+{% endblock %}
