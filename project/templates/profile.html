@@ -1,43 +1,407 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Calendar with Multiple Events</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter&display=swap">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f4f6fa;
+      margin: 0;
+      padding: 2rem;
+    }
 
-{% block content %}
-<h1 class="title">
-  Welcome, {{ name }}!
-</h1>
+    .title {
+      text-align: center;
+      font-size: 2rem;
+      margin-bottom: 2rem;
+    }
 
-<div class="calendar-container">
+    .calendar-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      justify-content: center;
+    }
+
+    .calendar {
+      border: 1px solid #ccc;
+      border-radius: 12px;
+      background: white;
+      padding: 1rem;
+      max-width: 600px;
+      width: 100%;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .calendar-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .calendar-header h3 {
+      margin: 0;
+      font-size: 1.25rem;
+    }
+
+    .calendar-header button {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+    }
+
+    .weekdays, .days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+    }
+
+    .weekdays div {
+      text-align: center;
+      font-weight: bold;
+      padding: 0.5rem 0;
+      color: #555;
+    }
+
+    .days div {
+      min-height: 100px;
+      border: 1px solid #eee;
+      padding: 4px;
+      position: relative;
+      cursor: pointer;
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .days div:hover {
+      background: #e3f2fd;
+    }
+
+    .day-number {
+      font-size: 0.85rem;
+      color: #333;
+      margin-bottom: 0.25rem;
+    }
+
+    .day-events {
+      font-size: 0.7rem;
+      color: #0277bd;
+      margin: 2px 0;
+      list-style-type: disc;
+      padding-left: 1em;
+    }
+
+    .event-delete-btn {
+      font-size: 0.6rem;
+      color: red;
+      cursor: pointer;
+      background: none;
+      border: none;
+      margin-left: 5px;
+    }
+
+    .add-event-btn {
+      background: #0288d1;
+      color: white;
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      margin: 1rem auto;
+      cursor: pointer;
+      display: block;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translate(-50%, -20%);
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      width: 90%;
+      max-width: 400px;
+    }
+
+    .modal h3 {
+      margin-top: 0;
+    }
+
+    .modal label {
+      margin-top: 1rem;
+      display: block;
+      font-size: 0.9rem;
+    }
+
+    .modal input,
+    .modal select {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.3rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    .modal-buttons {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 1rem;
+      gap: 1rem;
+    }
+
+    .modal-buttons button {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .modal-buttons .cancel {
+      background: #eee;
+    }
+
+    .modal-buttons .save {
+      background: #0288d1;
+      color: white;
+    }
+
+    /* Upcoming Events Modal */
+    .upcoming-events-btn {
+      background: #039be5;
+      color: white;
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      margin: 1rem auto;
+      cursor: pointer;
+      display: block;
+    }
+
+    .upcoming-events-modal {
+      display: none;
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translate(-50%, -20%);
+      background: white;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      width: 90%;
+      max-width: 500px;
+    }
+
+    .upcoming-events-list {
+      max-height: 300px;
+      overflow-y: auto;
+      padding-left: 20px;
+    }
+
+    .upcoming-event-item {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+</head>
+<body>
+  <h1 class="title">Welcome, User!</h1>
+
+  <div class="calendar-container">
     <div class="calendar">
-        <div class="calendar-header">
-            <button onclick="prevMonth()">&#9665;</button>
-            <h3 id="month-year"></h3>
-            <button onclick="nextMonth()">&#9655;</button>
-        </div>
-        <div class="weekdays">
-            <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
-        </div>
-        <div class="days" id="calendar-days"></div>
+      <div class="calendar-header">
+        <button onclick="prevMonth()">&#9665;</button>
+        <h3 id="month-year"></h3>
+        <button onclick="nextMonth()">&#9655;</button>
+      </div>
+      <div class="weekdays">
+        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+      </div>
+      <div class="days" id="calendar-days"></div>
     </div>
+  </div>
 
-    <div class="event-section">
-        <button class="add-event-btn" onclick="openModal()">+ Add Event</button>
-        <h4>Upcoming Events</h4>
-        <div class="event-list" id="event-list"></div>
-    </div>
-</div>
-
-<!-- Event Modal -->
-<div class="modal" id="event-modal">
+  <!-- Modal to Add Event -->
+  <div class="modal" id="event-modal">
     <h3>Add Event</h3>
     <label>Date:</label>
     <select id="event-day"></select>
     <select id="event-month"></select>
     <select id="event-year"></select>
-    <label>Event:</label>
-    <input type="text" id="event-input" placeholder="Enter event">
-    <div class="modal-buttons">
-        <button onclick="closeModal()">Cancel</button>
-        <button onclick="addEvent()">Save</button>
-    </div>
-</div>
 
-{% endblock %}
+    <label>Event Description:</label>
+    <input type="text" id="event-text" placeholder="Event detail">
+
+    <div class="modal-buttons">
+      <button class="cancel" onclick="closeModal()">Cancel</button>
+      <button class="save" onclick="saveEvent()">Save</button>
+    </div>
+  </div>
+
+  <!-- Button to open upcoming events -->
+  <button class="upcoming-events-btn" onclick="openUpcomingEventsModal()">Show Upcoming Events</button>
+
+  <!-- Upcoming Events Modal -->
+  <div class="upcoming-events-modal" id="upcoming-events-modal">
+    <h3>Upcoming Events</h3>
+    <div class="upcoming-events-list" id="upcoming-events-list"></div>
+    <div class="modal-buttons">
+      <button class="cancel" onclick="closeUpcomingEventsModal()">Close</button>
+    </div>
+  </div>
+
+  <button class="add-event-btn" onclick="openModalToToday()">+ Add Event</button>
+
+  <script>
+    const daysContainer = document.getElementById("calendar-days");
+    const monthYearDisplay = document.getElementById("month-year");
+    const upcomingEventsList = document.getElementById("upcoming-events-list");
+    let currentDate = dayjs();
+    let events = JSON.parse(localStorage.getItem("events")) || {};  // Load from localStorage
+
+    function renderCalendar() {
+      const start = currentDate.startOf("month");
+      const end = currentDate.endOf("month");
+      const startDay = start.day();
+      const totalDays = end.date();
+
+      monthYearDisplay.textContent = currentDate.format("MMMM YYYY");
+      daysContainer.innerHTML = "";
+
+      for (let i = 0; i < startDay; i++) {
+        daysContainer.innerHTML += `<div></div>`;
+      }
+
+      for (let day = 1; day <= totalDays; day++) {
+        const fullDate = currentDate.date(day).format("YYYY-MM-DD");
+        const dayEvents = events[fullDate] || [];
+        const eventHTML = dayEvents.map((e, idx) => {
+          return `
+            <li>
+              ${e}
+              <button class="event-delete-btn" onclick="deleteEvent('${fullDate}', ${idx})">❌</button>
+            </li>
+          `;
+        }).join("");
+        const dayHTML = `
+          <div onclick="openModalForDate('${fullDate}')">
+            <div class="day-number">${day}</div>
+            <ul class="day-events">${eventHTML}</ul>
+          </div>
+        `;
+        daysContainer.innerHTML += dayHTML;
+      }
+
+      localStorage.setItem("events", JSON.stringify(events));  // Save to localStorage
+    }
+
+    function prevMonth() {
+      currentDate = currentDate.subtract(1, "month");
+      renderCalendar();
+    }
+
+    function nextMonth() {
+      currentDate = currentDate.add(1, "month");
+      renderCalendar();
+    }
+
+    function openModalForDate(dateStr) {
+      const date = dayjs(dateStr);
+      setModalDate(date.date(), date.month(), date.year());
+      document.getElementById("event-modal").style.display = "block";
+    }
+
+    function openModalToToday() {
+      const today = dayjs();
+      setModalDate(today.date(), today.month(), today.year());
+      document.getElementById("event-modal").style.display = "block";
+    }
+
+    function setModalDate(day, month, year) {
+      const daySelect = document.getElementById("event-day");
+      const monthSelect = document.getElementById("event-month");
+      const yearSelect = document.getElementById("event-year");
+
+      daySelect.innerHTML = [...Array(31).keys()].map(d => `<option value="${d+1}" ${d+1===day ? 'selected' : ''}>${d+1}</option>`).join("");
+      monthSelect.innerHTML = [...Array(12).keys()].map(m => {
+        const name = dayjs().month(m).format("MMMM");
+        return `<option value="${m}" ${m===month ? 'selected' : ''}>${name}</option>`;
+      }).join("");
+      const nowYear = dayjs().year();
+      yearSelect.innerHTML = [...Array(11).keys()].map(i => {
+        const y = nowYear - 5 + i;
+        return `<option value="${y}" ${y===year ? 'selected' : ''}>${y}</option>`;
+      }).join("");
+    }
+
+    function closeModal() {
+      document.getElementById("event-modal").style.display = "none";
+      document.getElementById("event-text").value = "";
+    }
+
+    function saveEvent() {
+      const day = +document.getElementById("event-day").value;
+      const month = +document.getElementById("event-month").value;
+      const year = +document.getElementById("event-year").value;
+      const text = document.getElementById("event-text").value.trim();
+
+      if (!text) return;
+
+      const dateStr = dayjs().year(year).month(month).date(day).format("YYYY-MM-DD");
+      if (!events[dateStr]) {
+        events[dateStr] = [];
+      }
+      events[dateStr].push(text);
+
+      closeModal();
+      renderCalendar();
+    }
+
+    function deleteEvent(date, index) {
+      if (events[date]) {
+        events[date].splice(index, 1);
+        if (events[date].length === 0) {
+          delete events[date];
+        }
+      }
+      renderCalendar();
+    }
+
+    function openUpcomingEventsModal() {
+      upcomingEventsList.innerHTML = "";
+
+      for (let date in events) {
+        const eventDate = dayjs(date);
+        if (eventDate.isSameOrAfter(dayjs(), "day")) {
+          events[date].forEach((event, idx) => {
+            upcomingEventsList.innerHTML += `
+              <div class="upcoming-event-item">
+                <strong>${eventDate.format("MMMM DD, YYYY")}</strong><br>
+                ${event} <button onclick="deleteEvent('${date}', ${idx})">❌</button>
+              </div>
+            `;
+          });
+        }
+      }
+
+      document.getElementById("upcoming-events-modal").style.display = "block";
+    }
+
+    function closeUpcomingEventsModal() {
+      document.getElementById("upcoming-events-modal").style.display = "none";
+    }
+
+    document.addEventListener("DOMContentLoaded", renderCalendar);
+  </script>
+</body>
+</html>
