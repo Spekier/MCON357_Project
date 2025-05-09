@@ -105,7 +105,8 @@
     }
 
     .add-event-btn,
-    .upcoming-events-btn {
+    .upcoming-events-btn,
+    .search-btn {
       padding: 10px 20px;
       background-color: #5e72e4;
       color: white;
@@ -175,6 +176,38 @@
       border-radius: 6px;
     }
 
+    .search-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .search-container input {
+      padding: 10px;
+      width: 300px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-right: 10px;
+    }
+
+    .search-results {
+      margin-top: 20px;
+      padding: 10px;
+      background: #fff;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .search-results .result-item {
+      padding: 10px;
+      background: #f9f9f9;
+      margin: 5px 0;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
     .date-picker-container {
       position: relative;
     }
@@ -187,6 +220,15 @@
 </head>
 <body>
   <div class="title">My Calendar</div>
+
+  <!-- Search Section -->
+  <div class="search-container">
+    <input type="text" id="search-bar" placeholder="Search for events..." oninput="searchEvents()">
+    <button class="search-btn" onclick="searchEvents()">Search</button>
+  </div>
+
+  <div class="search-results" id="search-results"></div>
+
   <div class="calendar-container">
     <div class="calendar">
       <div class="calendar-header">
@@ -226,6 +268,7 @@
     <div class="modal-buttons">
       <button class="cancel" onclick="closeViewModal()">Close</button>
       <button class="save" onclick="deleteSelectedEvent()">Delete</button>
+      <button class="edit" onclick="editSelectedEvent()">Edit</button> <!-- New Edit Button -->
     </div>
   </div>
 
@@ -250,6 +293,8 @@
     const eventDate = document.getElementById('event-date');
     const viewEventTitle = document.getElementById('view-event-title');
     const viewEventTime = document.getElementById('view-event-time');
+    const searchBar = document.getElementById('search-bar');
+    const searchResultsContainer = document.getElementById('search-results');
 
     let selectedDate = null;
     let selectedEventIndex = null;
@@ -342,6 +387,44 @@
       renderCalendar(currentDate);
     }
 
+    function searchEvents() {
+      const query = searchBar.value.trim().toLowerCase();
+      searchResultsContainer.innerHTML = '';
+
+      if (!query) return;
+
+      const searchResults = [];
+
+      for (const date in events) {
+        events[date].forEach((event, index) => {
+          if (event.title.toLowerCase().includes(query)) {
+            searchResults.push({
+              date,
+              event,
+              index
+            });
+          }
+        });
+      }
+
+      if (searchResults.length === 0) {
+        searchResultsContainer.innerHTML = '<p>No results found</p>';
+        return;
+      }
+
+      searchResults.forEach(result => {
+        const item = document.createElement('div');
+        item.classList.add('result-item');
+        item.innerHTML = `<strong>${result.event.title}</strong> on ${dayjs(result.date).format('MMMM D, YYYY')}`;
+        item.onclick = () => {
+          openModal(result.date);
+          searchBar.value = '';
+          searchResultsContainer.innerHTML = '';
+        };
+        searchResultsContainer.appendChild(item);
+      });
+    }
+
     function showUpcomingEvents() {
       const now = dayjs();
       const futureEvents = [];
@@ -356,7 +439,7 @@
 
       upcomingEventsList.innerHTML = futureEvents.map(e => {
         const eventDate = dayjs(e.date);
-        const dayOfWeek = eventDate.format('dddd'); // Get the day of the week
+        const dayOfWeek = eventDate.format('dddd');
         return `<div class="upcoming-event-item">
                   <strong>${dayOfWeek}, ${e.date}</strong>: ${e.title}${e.allday ? ' (All day)' : ' at ' + formatTo12Hour(e.time)}
                 </div>`;
