@@ -1,468 +1,911 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Calendar with Multiple Events</title>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter&display=swap">
-  <style>
-    * {
-      font-family: 'Inter', sans-serif;
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calendar with Multiple Events</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter&display=swap">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    body {
-      background-color: #f9f9f9;
-      color: #333;
-      padding: 20px;
-    }
+        body {
+            background-color: #f9f9f9;
+            color: #333;
+            padding: 20px;
+        }
 
-    .title {
-      text-align: center;
-      font-size: 32px;
-      margin-bottom: 20px;
-    }
+        .title {
+            text-align: center;
+            font-size: 32px;
+            margin-bottom: 20px;
+            color: #333;
+        }
 
-    .calendar-container {
-      display: flex;
-      justify-content: center;
-    }
+        .calendar-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
 
-    .calendar {
-      width: 90%;
-      max-width: 800px;
-      background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      padding: 20px;
-    }
+        .calendar {
+            width: 90%;
+            max-width: 800px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
 
-    .calendar-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
 
-    .calendar-header h3 {
-      font-size: 24px;
-    }
+            .calendar-header h3 {
+                font-size: 24px;
+                color: #5e72e4;
+            }
 
-    .calendar-header button {
-      background-color: #5e72e4;
-      border: none;
-      color: white;
-      padding: 10px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
+            .calendar-header button {
+                background-color: #5e72e4;
+                border: none;
+                color: white;
+                padding: 10px 15px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 16px;
+                transition: background-color 0.3s;
+            }
 
-    .weekdays {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      margin-top: 20px;
-      text-align: center;
-      font-weight: bold;
-    }
+                .calendar-header button:hover {
+                    background-color: #4a5cc0;
+                }
 
-    .days {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      grid-auto-rows: 100px;
-      gap: 5px;
-      margin-top: 10px;
-    }
+        .weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            margin-top: 20px;
+            text-align: center;
+            font-weight: bold;
+            color: #666;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
 
-    .days div {
-      background: #f1f1f1;
-      border-radius: 6px;
-      padding: 5px;
-      position: relative;
-      overflow-y: auto;
-      cursor: pointer;
-    }
+        .days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            grid-auto-rows: minmax(100px, auto); /* Adjusted row height */
+            gap: 5px;
+            margin-top: 10px;
+        }
 
-    .day-number {
-      font-weight: bold;
-    }
+            .days div {
+                background: #f1f1f1;
+                border-radius: 6px;
+                padding: 8px;
+                position: relative;
+                overflow-y: auto;
+                cursor: pointer;
+                transition: background-color 0.3s;
+                min-height: 100px; /* Ensure a minimum height */
+            }
 
-    .day-events {
-      font-size: 12px;
-      list-style: none;
-      padding-left: 0;
-    }
+                .days div:hover {
+                    background-color: #e0e0e0;
+                }
 
-    .day-events li {
-      margin-top: 5px;
-    }
+                .days div.empty-day { /* Style for empty day cells */
+                    background: #f9f9f9;
+                    cursor: default;
+                }
 
-    .action-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      margin: 20px 0;
-    }
+                    .days div.empty-day:hover {
+                        background: #f9f9f9;
+                    }
 
-    .add-event-btn,
-    .upcoming-events-btn,
-    .search-btn {
-      padding: 10px 20px;
-      background-color: #5e72e4;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 16px;
-    }
 
-    .modal {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-      z-index: 1000;
-      max-width: 400px;
-      width: 90%;
-    }
+        .day-number {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: #333;
+        }
 
-    .modal input,
-    .modal select {
-      width: 100%;
-      padding: 8px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
+        .day-events {
+            font-size: 12px;
+            list-style: none;
+            padding-left: 0;
+        }
 
-    .modal-buttons {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 10px;
-    }
+            .day-events li {
+                margin-top: 5px;
+                padding: 3px 5px;
+                background-color: #5e72e4;
+                color: white;
+                border-radius: 4px;
+                cursor: pointer;
+                font-size: 11px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
 
-    .modal-buttons button {
-      padding: 8px 16px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
+                .day-events li:hover {
+                    background-color: #4a5cc0;
+                }
 
-    .modal-buttons .cancel {
-      background-color: #ccc;
-      color: #333;
-    }
 
-    .modal-buttons .save {
-      background-color: #5e72e4;
-      color: white;
-    }
+        .action-buttons-container { /* Container for main action buttons */
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
 
-    .upcoming-events-list {
-      max-height: 200px;
-      overflow-y: auto;
-      margin: 10px 0;
-    }
+        .primary-action-btn, /* General class for Add Event and Upcoming Events buttons */
+        .upcoming-events-btn-styled {
+            padding: 12px 25px;
+            background-color: #5e72e4;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
 
-    .upcoming-event-item {
-      background-color: #f1f1f1;
-      margin: 5px 0;
-      padding: 8px;
-      border-radius: 6px;
-    }
+            .primary-action-btn:hover,
+            .upcoming-events-btn-styled:hover {
+                background-color: #4a5cc0;
+            }
 
-    .search-container {
-      display: flex;
-      justify-content: center;
-      margin-bottom: 20px;
-    }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            max-width: 450px; /* Increased max-width */
+            width: 90%;
+        }
 
-    .search-container input {
-      padding: 10px;
-      width: 300px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      margin-right: 10px;
-    }
+            .modal h3 {
+                font-size: 22px;
+                color: #333;
+                margin-bottom: 20px;
+                text-align: center;
+            }
 
-    .search-results {
-      margin-top: 20px;
-      padding: 10px;
-      background: #fff;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      border-radius: 8px;
-      max-height: 300px;
-      overflow-y: auto;
-    }
+            .modal label {
+                display: block;
+                margin-top: 15px;
+                margin-bottom: 5px;
+                font-weight: bold;
+                font-size: 14px;
+                color: #555;
+            }
 
-    .search-results .result-item {
-      padding: 10px;
-      background: #f9f9f9;
-      margin: 5px 0;
-      border-radius: 6px;
-      cursor: pointer;
-    }
+            .modal input[type="text"],
+            .modal input[type="email"], /* Kept for potential future use, though not in reminder form */
+            .modal select {
+                width: 100%;
+                padding: 10px;
+                margin-bottom: 10px; /* Consolidated margin */
+                border: 1px solid #ccc;
+                border-radius: 6px;
+                font-size: 14px;
+            }
 
-    .date-picker-container {
-      position: relative;
-    }
+        .date-time-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 10px;
+        }
 
-    .date-picker-container input {
-      width: 100%;
-    }
-  </style>
-  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+        .time-selection {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            align-items: center; /* Align items vertically */
+        }
+
+            .time-selection label { /* For "All-day" label positioning */
+                grid-column: span 3;
+                margin-top: 10px;
+            }
+
+
+        .reminder-section {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #eee;
+        }
+
+            .reminder-section label { /* General label styling within reminder */
+                font-weight: normal;
+                display: flex; /* For aligning checkbox and text */
+                align-items: center;
+            }
+
+            .reminder-section input[type="checkbox"] {
+                margin-right: 8px;
+            }
+
+        .reminder-options {
+            margin-top: 10px;
+            padding-left: 10px;
+            border-left: 2px solid #5e72e4;
+        }
+
+            .reminder-options p {
+                font-size: 13px;
+                color: #666;
+                margin-bottom: 10px;
+            }
+
+        .reminder-checkbox {
+            margin-bottom: 8px;
+        }
+
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end; /* Align buttons to the right */
+            gap: 10px; /* Space between buttons */
+            margin-top: 25px;
+        }
+
+            .modal-buttons button {
+                padding: 10px 20px;
+                border: none;
+                border-radius: 6px;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: bold;
+                transition: background-color 0.3s, color 0.3s;
+            }
+
+            .modal-buttons .cancel {
+                background-color: #f0f0f0;
+                color: #333;
+                border: 1px solid #ccc;
+            }
+
+                .modal-buttons .cancel:hover {
+                    background-color: #e0e0e0;
+                }
+
+            .modal-buttons .save {
+                background-color: #5e72e4;
+                color: white;
+            }
+
+                .modal-buttons .save:hover {
+                    background-color: #4a5cc0;
+                }
+
+            .modal-buttons .delete { /* Delete button style */
+                background-color: #f44336;
+                color: white;
+            }
+
+                .modal-buttons .delete:hover {
+                    background-color: #d32f2f;
+                }
+
+
+        .upcoming-events-list {
+            max-height: 300px; /* Increased height */
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+
+        .upcoming-event-item {
+            background-color: #f8f9fa;
+            margin: 8px 0;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid #5e72e4;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+            .upcoming-event-item:hover {
+                background-color: #e9ecef;
+            }
+
+            .upcoming-event-item strong {
+                display: block;
+                font-size: 15px;
+                color: #333;
+                margin-bottom: 4px;
+            }
+
+        .no-events-message {
+            text-align: center;
+            padding: 20px;
+            color: #777;
+        }
+
+        #event-view-modal p {
+            font-size: 16px;
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        #view-event-reminders {
+            font-size: 14px;
+            color: #555;
+            margin-top: 15px;
+            padding-top: 10px;
+            border-top: 1px dashed #eee;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/isSameOrAfter.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/customParseFormat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/utc.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/timezone.js"></script>
 </head>
 <body>
-  <div class="title">My Calendar</div>
-
-  <!-- Search Section -->
-  <div class="search-container">
-    <input type="text" id="search-bar" placeholder="Search for events..." oninput="searchEvents()">
-    <button class="search-btn" onclick="searchEvents()">Search</button>
-  </div>
-
-  <div class="search-results" id="search-results"></div>
-
-  <div class="calendar-container">
-    <div class="calendar">
-      <div class="calendar-header">
-        <button id="prev-month">←</button>
-        <h3 id="month-year"></h3>
-        <button id="next-month">→</button>
-      </div>
-      <div class="weekdays">
-        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
-      </div>
-      <div class="days" id="calendar-days"></div>
+    <div class="title">My Enhanced Calendar</div>
+    <div class="calendar-container">
+        <div class="calendar">
+            <div class="calendar-header">
+                <button id="prev-month">← Prev</button>
+                <h3 id="month-year"></h3>
+                <button id="next-month">Next →</button>
+            </div>
+            <div class="weekdays">
+                <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+            </div>
+            <div class="days" id="calendar-days"></div>
+        </div>
     </div>
-  </div>
 
-  <div class="action-buttons">
-    <button class="add-event-btn" onclick="openEventModal()">Add Event</button>
-    <button class="upcoming-events-btn" onclick="showUpcomingEvents()">Upcoming Events</button>
-  </div>
-
-  <div class="modal" id="event-modal">
-    <h3>Add Event</h3>
-    <div class="date-picker-container">
-      <input type="date" id="event-date" />
+    <div class="action-buttons-container">
+        <button class="upcoming-events-btn-styled" onclick="showUpcomingEvents()">Upcoming Events</button>
     </div>
-    <input type="text" id="event-title" placeholder="Event Title">
-    <input type="time" id="event-time">
-    <label><input type="checkbox" id="event-allday"> All-day event</label>
-    <div class="modal-buttons">
-      <button class="cancel" onclick="closeModal()">Cancel</button>
-      <button class="save" onclick="saveEvent()">Save</button>
-    </div>
-  </div>
 
-  <div class="modal" id="event-view-modal">
-    <h3 id="view-event-title"></h3>
-    <p id="view-event-time"></p>
-    <div class="modal-buttons">
-      <button class="cancel" onclick="closeViewModal()">Close</button>
-      <button class="save" onclick="deleteSelectedEvent()">Delete</button>
-      <button class="edit" onclick="editSelectedEvent()">Edit</button> <!-- New Edit Button -->
-    </div>
-  </div>
+    <div class="modal" id="event-modal">
+        <h3 id="modal-title">Add Event</h3>
+        <label for="event-day">Date:</label>
+        <div class="date-time-grid">
+            <select id="event-day"></select>
+            <select id="event-month"></select>
+            <select id="event-year"></select>
+        </div>
 
-  <div class="modal" id="upcoming-events-modal">
-    <h3>Upcoming Events</h3>
-    <div class="upcoming-events-list" id="upcoming-events-list"></div>
-    <div class="modal-buttons">
-      <button class="cancel" onclick="closeUpcomingModal()">Close</button>
-    </div>
-  </div>
+        <label><input type="checkbox" id="event-allday" onchange="toggleTimeSelection()"> All-day event</label>
 
-  <script>
+        <div id="time-selection-container">
+            <label for="event-hour">Time:</label>
+            <div class="time-selection">
+                <select id="event-hour"></select>
+                <select id="event-minute"></select>
+                <select id="event-ampm">
+                    <option value="AM">AM</option>
+                    <option value="PM">PM</option>
+                </select>
+            </div>
+        </div>
+
+        <label for="event-title">Event Description:</label>
+        <input type="text" id="event-title" placeholder="Event detail">
+
+        <div class="reminder-section">
+            <label><input type="checkbox" id="enable-reminder" onchange="toggleReminderOptions()"> Enable Email Reminders</label>
+            <div class="reminder-options" id="reminder-options-details" style="display: none;">
+                <p>Reminders will be sent to your registered email address.</p>
+                <div class="reminder-checkbox">
+                    <label><input type="checkbox" id="reminder-24h"> 24 hours before</label>
+                </div>
+                <div class="reminder-checkbox">
+                    <label><input type="checkbox" id="reminder-48h"> 48 hours before</label>
+                </div>
+                <div class="reminder-checkbox">
+                    <label><input type="checkbox" id="reminder-72h"> 72 hours before</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-buttons">
+            <button class="cancel" onclick="closeModal()">Cancel</button>
+            <button class="save" onclick="saveEvent()">Save</button>
+        </div>
+    </div>
+
+    <div class="modal" id="event-view-modal">
+        <h3 id="view-event-title"></h3>
+        <p id="view-event-date"></p>
+        <p id="view-event-time"></p>
+        <div id="view-event-reminders"></div>
+        <div class="modal-buttons">
+            <button class="cancel" onclick="closeViewModal()">Close</button>
+            <button class="delete" onclick="deleteSelectedEvent()">Delete</button>
+        </div>
+    </div>
+
+    <div class="modal" id="upcoming-events-modal">
+        <h3>Upcoming Events</h3>
+        <div class="upcoming-events-list" id="upcoming-events-list"></div>
+        <div class="modal-buttons">
+            <button class="cancel" onclick="closeUpcomingModal()">Close</button>
+        </div>
+    </div>
+
+    <button class="primary-action-btn" onclick="openEventModal()" style="position: fixed; bottom: 30px; right: 30px; font-size: 24px; padding: 15px 25px;">+ Add Event</button>
+
+
+    <script>
+    // It's crucial to define LOGGED_IN_USER_EMAIL from your backend before this script runs.
+    // For development/testing if backend isn't setup yet, you can use a placeholder:
+    const LOGGED_IN_USER_EMAIL = ""; // <<< YOUR BACKEND MUST SET THIS e.g. "{{ current_user.email if current_user and current_user.is_authenticated else '' }}"
+
+    dayjs.extend(window.dayjs_plugin_isSameOrAfter);
+    dayjs.extend(window.dayjs_plugin_customParseFormat);
+    dayjs.extend(window.dayjs_plugin_utc);
+    dayjs.extend(window.dayjs_plugin_timezone);
+
+
     const monthYearLabel = document.getElementById('month-year');
     const daysContainer = document.getElementById('calendar-days');
     const eventModal = document.getElementById('event-modal');
+    const modalTitle = document.getElementById('modal-title');
     const eventViewModal = document.getElementById('event-view-modal');
     const upcomingEventsModal = document.getElementById('upcoming-events-modal');
     const upcomingEventsList = document.getElementById('upcoming-events-list');
-    const eventTitle = document.getElementById('event-title');
-    const eventTime = document.getElementById('event-time');
-    const eventAllDay = document.getElementById('event-allday');
-    const eventDate = document.getElementById('event-date');
-    const viewEventTitle = document.getElementById('view-event-title');
-    const viewEventTime = document.getElementById('view-event-time');
-    const searchBar = document.getElementById('search-bar');
-    const searchResultsContainer = document.getElementById('search-results');
 
-    let selectedDate = null;
-    let selectedEventIndex = null;
+    const eventDaySelect = document.getElementById('event-day');
+    const eventMonthSelect = document.getElementById('event-month');
+    const eventYearSelect = document.getElementById('event-year');
+    const eventHourSelect = document.getElementById('event-hour');
+    const eventMinuteSelect = document.getElementById('event-minute');
+    const eventAmpmSelect = document.getElementById('event-ampm');
+    const eventTitleInput = document.getElementById('event-title');
+    const eventAllDayCheckbox = document.getElementById('event-allday');
+    const timeSelectionContainer = document.getElementById('time-selection-container');
+
+    const enableReminderCheckbox = document.getElementById('enable-reminder');
+    const reminderOptionsDetails = document.getElementById('reminder-options-details');
+    const reminder24hCheckbox = document.getElementById('reminder-24h');
+    const reminder48hCheckbox = document.getElementById('reminder-48h');
+    const reminder72hCheckbox = document.getElementById('reminder-72h');
+
+    const viewEventTitle = document.getElementById('view-event-title');
+    const viewEventDate = document.getElementById('view-event-date');
+    const viewEventTime = document.getElementById('view-event-time');
+    const viewEventReminders = document.getElementById('view-event-reminders');
+
+    let selectedDateForModal = null;
+    let editingEvent = null;
     let currentDate = dayjs();
-    const events = {};
+    let events = JSON.parse(localStorage.getItem('calendarEventsEnhancedV2')) || {}; // Changed key to avoid conflicts if old data exists
+
+    function saveEventsToLocalStorage() {
+        localStorage.setItem('calendarEventsEnhancedV2', JSON.stringify(events));
+    }
 
     function formatTo12Hour(time24) {
-      const [hour, minute] = time24.split(':');
-      const h = parseInt(hour);
-      const ampm = h >= 12 ? 'PM' : 'AM';
-      const hour12 = h % 12 || 12;
-      return `${hour12}:${minute} ${ampm}`;
+        if (!time24) return 'Time not set';
+        const [hour, minute] = time24.split(':');
+        const h = parseInt(hour);
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const hour12 = h % 12 || 12;
+        return `${hour12}:${String(minute).padStart(2, '0')} ${ampm}`;
+    }
+
+    function populateDateSelects(dateObj) {
+        eventDaySelect.innerHTML = '';
+        for (let i = 1; i <= dateObj.daysInMonth(); i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = i;
+            eventDaySelect.appendChild(option);
+        }
+        eventDaySelect.value = dateObj.date();
+
+        eventMonthSelect.innerHTML = '';
+        for (let i = 0; i < 12; i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = dayjs().month(i).format('MMMM');
+            eventMonthSelect.appendChild(option);
+        }
+        eventMonthSelect.value = dateObj.month();
+
+        eventYearSelect.innerHTML = '';
+        const currentYear = dayjs().year();
+        for (let i = currentYear - 5; i <= currentYear + 5; i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = i;
+            eventYearSelect.appendChild(option);
+        }
+        eventYearSelect.value = dateObj.year();
+    }
+
+    function populateTimeSelects(timeStr) {
+        eventHourSelect.innerHTML = '';
+        for (let i = 1; i <= 12; i++) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = String(i).padStart(2, '0');
+            eventHourSelect.appendChild(option);
+        }
+
+        eventMinuteSelect.innerHTML = '';
+        for (let i = 0; i < 60; i += 5) {
+            const option = document.createElement('option');
+            option.value = i;
+            option.textContent = String(i).padStart(2, '0');
+            eventMinuteSelect.appendChild(option);
+        }
+
+        if (timeStr) { // Expected format HH:mm (24-hour)
+            const [hour24, minute] = timeStr.split(':').map(Number);
+            let hour12 = hour24 % 12;
+            if (hour12 === 0) hour12 = 12; // 0 and 12 should be 12 AM/PM
+
+            eventHourSelect.value = hour12;
+            eventMinuteSelect.value = minute;
+            eventAmpmSelect.value = hour24 >= 12 ? 'PM' : 'AM';
+        } else { // Default to noon
+            eventHourSelect.value = 12;
+            eventMinuteSelect.value = 0;
+            eventAmpmSelect.value = 'PM';
+        }
+    }
+
+    function toggleTimeSelection() {
+        timeSelectionContainer.style.display = eventAllDayCheckbox.checked ? 'none' : 'block';
+    }
+
+    function toggleReminderOptions() {
+        reminderOptionsDetails.style.display = enableReminderCheckbox.checked ? 'block' : 'none';
     }
 
     function renderCalendar(date) {
-      const startOfMonth = date.startOf('month');
-      const endOfMonth = date.endOf('month');
-      const startDay = startOfMonth.day();
-      const daysInMonth = endOfMonth.date();
+        const startOfMonth = date.startOf('month');
+        const endOfMonth = date.endOf('month');
+        const startDay = startOfMonth.day();
+        const daysInMonth = endOfMonth.date();
 
-      monthYearLabel.textContent = date.format('MMMM YYYY');
-      daysContainer.innerHTML = '';
+        monthYearLabel.textContent = date.format('MMMM YYYY');
+        daysContainer.innerHTML = '';
 
-      for (let i = 0; i < startDay; i++) {
-        const emptyDiv = document.createElement('div');
-        daysContainer.appendChild(emptyDiv);
-      }
+        for (let i = 0; i < startDay; i++) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.classList.add('empty-day');
+            daysContainer.appendChild(emptyDiv);
+        }
 
-      for (let i = 1; i <= daysInMonth; i++) {
-        const day = document.createElement('div');
-        const dayKey = date.date(i).format('YYYY-MM-DD');
-        const eventList = events[dayKey]?.map((e, index) => `<li onclick='viewEvent("${dayKey}", ${index}); event.stopPropagation();'>${e.title}</li>`).join('') || '';
-        day.innerHTML = `<div class="day-number">${i}</div><ul class="day-events">${eventList}</ul>`;
-        day.onclick = () => openModal(dayKey);
-        daysContainer.appendChild(day);
-      }
+        for (let i = 1; i <= daysInMonth; i++) {
+            const dayDiv = document.createElement('div');
+            const dayKey = date.date(i).format('YYYY-MM-DD');
+
+            const eventListHtml = (events[dayKey] || []).map((e, index) =>
+                `<li onclick='viewEvent("${dayKey}", ${index}); event.stopPropagation();'>${e.title}</li>`
+            ).join('');
+
+            dayDiv.innerHTML = `<div class="day-number">${i}</div><ul class="day-events">${eventListHtml}</ul>`;
+            dayDiv.onclick = () => openModalForDate(dayKey);
+            daysContainer.appendChild(dayDiv);
+        }
+        saveEventsToLocalStorage();
     }
 
-    function openEventModal() {
-      selectedDate = currentDate.format('YYYY-MM-DD');
-      eventDate.value = selectedDate;
-      eventTitle.value = '';
-      eventTime.value = '';
-      eventAllDay.checked = false;
-      eventModal.style.display = 'block';
+    function openEventModal(dateToOpen = null) {
+        modalTitle.textContent = "Add Event";
+        editingEvent = null;
+        const targetDate = dateToOpen ? dayjs(dateToOpen) : dayjs();
+        selectedDateForModal = targetDate.format('YYYY-MM-DD');
+
+        populateDateSelects(targetDate);
+        populateTimeSelects(null); // Default time, e.g., noon
+
+        eventTitleInput.value = '';
+        eventAllDayCheckbox.checked = false;
+        toggleTimeSelection();
+
+        enableReminderCheckbox.checked = false;
+        toggleReminderOptions();
+        reminder24hCheckbox.checked = false;
+        reminder48hCheckbox.checked = false;
+        reminder72hCheckbox.checked = false;
+
+        eventModal.style.display = 'block';
     }
 
-    function openModal(date) {
-      selectedDate = date;
-      eventTitle.value = '';
-      eventTime.value = '';
-      eventAllDay.checked = false;
-      eventModal.style.display = 'block';
+    function openModalForDate(dateKey) {
+        modalTitle.textContent = "Add Event to " + dayjs(dateKey).format("MMM D");
+        editingEvent = null;
+        selectedDateForModal = dateKey;
+        const targetDate = dayjs(dateKey);
+
+        populateDateSelects(targetDate);
+        populateTimeSelects(null);
+
+        eventTitleInput.value = '';
+        eventAllDayCheckbox.checked = false;
+        toggleTimeSelection();
+
+        enableReminderCheckbox.checked = false;
+        toggleReminderOptions();
+        reminder24hCheckbox.checked = false;
+        reminder48hCheckbox.checked = false;
+        reminder72hCheckbox.checked = false;
+
+        eventModal.style.display = 'block';
     }
 
     function closeModal() {
-      eventModal.style.display = 'none';
+        eventModal.style.display = 'none';
     }
 
-    function viewEvent(date, index) {
-      selectedDate = date;
-      selectedEventIndex = index;
-      const event = events[date][index];
-      viewEventTitle.textContent = event.title;
-      viewEventTime.textContent = event.allday ? 'All day' : formatTo12Hour(event.time);
-      eventViewModal.style.display = 'block';
+    function viewEvent(dateKey, index) {
+        const event = events[dateKey] && events[dateKey][index];
+        if (!event) return;
+
+        editingEvent = { date: dateKey, index: index };
+
+        viewEventTitle.textContent = event.title;
+        viewEventDate.textContent = `Date: ${dayjs(dateKey).format('MMMM D, YYYY')}`;
+        viewEventTime.textContent = event.allday ? 'All day' : `Time: ${formatTo12Hour(event.time)}`;
+
+        if (event.reminders && event.reminders.enabled) {
+            let reminderInfo = `Email Reminders will be sent to: ${event.reminders.email || 'your registered email (if provided)'}.`;
+             if (!event.reminders.email || event.reminders.email === "") {
+                reminderInfo = `Email Reminders will be sent to your registered email (if you are logged in and email is available).`;
+            }
+
+            const timings = [];
+            if (event.reminders.remind24h) timings.push("24h before");
+            if (event.reminders.remind48h) timings.push("48h before");
+            if (event.reminders.remind72h) timings.push("72h before");
+
+            if (timings.length > 0) {
+                reminderInfo += `<br>Set for: ${timings.join(', ')}`;
+            } else {
+                reminderInfo += `<br>No specific reminder times selected.`;
+            }
+            viewEventReminders.innerHTML = reminderInfo;
+            viewEventReminders.style.display = 'block';
+        } else {
+            viewEventReminders.style.display = 'none';
+        }
+        eventViewModal.style.display = 'block';
     }
 
     function closeViewModal() {
-      eventViewModal.style.display = 'none';
+        eventViewModal.style.display = 'none';
+        editingEvent = null;
     }
 
     function deleteSelectedEvent() {
-      events[selectedDate].splice(selectedEventIndex, 1);
-      if (events[selectedDate].length === 0) delete events[selectedDate];
-      closeViewModal();
-      renderCalendar(currentDate);
+        if (editingEvent && events[editingEvent.date] && events[editingEvent.date][editingEvent.index] !== undefined) {
+            events[editingEvent.date].splice(editingEvent.index, 1);
+            if (events[editingEvent.date].length === 0) {
+                delete events[editingEvent.date];
+            }
+            closeViewModal();
+            renderCalendar(currentDate);
+        }
     }
 
-    function saveEvent() {
-      const title = eventTitle.value.trim();
-      const time = eventTime.value;
-      const allday = eventAllDay.checked;
-      const date = eventDate.value;
-      if (!title || (!allday && !time) || !date) return;
+    async function saveEvent() { // Made async to use await for fetch
+        const title = eventTitleInput.value.trim();
+        const allday = eventAllDayCheckbox.checked;
 
-      if (!events[date]) events[date] = [];
-      events[date].push({ title, time, allday });
-      closeModal();
-      renderCalendar(currentDate);
-    }
+        const day = parseInt(eventDaySelect.value);
+        const month = parseInt(eventMonthSelect.value); // 0-indexed for Day.js
+        const year = parseInt(eventYearSelect.value);
 
-    function searchEvents() {
-      const query = searchBar.value.trim().toLowerCase();
-      searchResultsContainer.innerHTML = '';
+        let eventDateObject = dayjs().year(year).month(month).date(day);
+        let time24 = null; // Store 24-hour time string HH:mm
+        let eventDateTimeUnix = null;
 
-      if (!query) return;
+        if (!allday) {
+            let hour12 = parseInt(eventHourSelect.value);
+            const minute = parseInt(eventMinuteSelect.value);
+            const ampm = eventAmpmSelect.value;
 
-      const searchResults = [];
+            let hour24 = hour12;
+            if (ampm === 'PM' && hour12 < 12) hour24 += 12;
+            if (ampm === 'AM' && hour12 === 12) hour24 = 0; // Midnight case
 
-      for (const date in events) {
-        events[date].forEach((event, index) => {
-          if (event.title.toLowerCase().includes(query)) {
-            searchResults.push({
-              date,
-              event,
-              index
-            });
-          }
-        });
-      }
+            time24 = `${String(hour24).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+            eventDateObject = eventDateObject.hour(hour24).minute(minute).second(0);
+            eventDateTimeUnix = eventDateObject.unix();
+        } else {
+            // For all-day events, your backend might expect a specific time (e.g., start of day)
+            // Or handle it differently. For now, let's set it to the start of the selected date in local time.
+            eventDateObject = eventDateObject.startOf('day');
+            eventDateTimeUnix = eventDateObject.unix();
+        }
 
-      if (searchResults.length === 0) {
-        searchResultsContainer.innerHTML = '<p>No results found</p>';
-        return;
-      }
+        if (!title) { // Simplified check: title is always required. Time is handled by 'allday'.
+            alert("Please fill in the event title.");
+            return;
+        }
+        if (!allday && !time24) { // Specific check if not all-day, time must be set
+             alert("Please set a time for the event if it's not an all-day event.");
+            return;
+        }
 
-      searchResults.forEach(result => {
-        const item = document.createElement('div');
-        item.classList.add('result-item');
-        item.innerHTML = `<strong>${result.event.title}</strong> on ${dayjs(result.date).format('MMMM D, YYYY')}`;
-        item.onclick = () => {
-          openModal(result.date);
-          searchBar.value = '';
-          searchResultsContainer.innerHTML = '';
+
+        const eventDateStr = eventDateObject.format('YYYY-MM-DD'); // For local storage key
+
+        let userEmailForReminder = null;
+        let reminderTimingsArray = [];
+        const remindersEnabled = enableReminderCheckbox.checked;
+
+        if (remindersEnabled) {
+            if (LOGGED_IN_USER_EMAIL && LOGGED_IN_USER_EMAIL.trim() !== "") {
+                userEmailForReminder = LOGGED_IN_USER_EMAIL;
+                if (reminder24hCheckbox.checked) reminderTimingsArray.push(24);
+                if (reminder48hCheckbox.checked) reminderTimingsArray.push(48);
+                if (reminder72hCheckbox.checked) reminderTimingsArray.push(72);
+
+                if (reminderTimingsArray.length === 0) {
+                    alert("Please select at least one reminder timing if enabling reminders.");
+                    return; // Or allow saving without specific timings, backend might have a default
+                }
+
+                // Prepare data for backend
+                const reminderData = {
+                    eventDateTime: eventDateTimeUnix, // Send Unix timestamp
+                    eventText: title,
+                    reminderTimings: reminderTimingsArray
+                };
+
+                try {
+                    const response = await fetch('/schedule_reminder', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(reminderData),
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        console.log('Reminder scheduled successfully on backend.');
+                        // You might want to add a success message to the user here
+                    } else {
+                        console.error('Failed to schedule reminder on backend:', result.error || 'Unknown error');
+                        alert('Failed to schedule reminder on the server. Please try again. ' + (result.error || ''));
+                        // Optionally, don't save the event locally if backend fails, or save with reminder disabled
+                        // For now, we proceed to save locally
+                    }
+                } catch (error) {
+                    console.error('Error sending reminder request to backend:', error);
+                    alert('Error connecting to the server to schedule reminder. Please check your connection and try again.');
+                    // Decide on local saving strategy here too
+                }
+
+            } else {
+                alert("Cannot set reminder: Your email address is not available. Please ensure you are logged in and your email is configured in the script.");
+                console.warn("Attempted to save reminder without a valid LOGGED_IN_USER_EMAIL.");
+                // If email is missing, we should probably not enable reminders for this event
+                // or at least not attempt to send to backend.
+                // For safety, let's disable reminders if email is missing but was checked.
+                enableReminderCheckbox.checked = false; // Uncheck it visually
+                // And ensure reminders object reflects this
+            }
+        }
+
+
+        const newEvent = {
+            title,
+            time: allday ? null : time24, // Store 24h time string or null
+            allday,
+            reminders: {
+                enabled: enableReminderCheckbox.checked, // Reflects if successfully set up (esp. if email was missing)
+                email: enableReminderCheckbox.checked ? userEmailForReminder : null,
+                remind24h: enableReminderCheckbox.checked ? reminder24hCheckbox.checked : false,
+                remind48h: enableReminderCheckbox.checked ? reminder48hCheckbox.checked : false,
+                remind72h: enableReminderCheckbox.checked ? reminder72hCheckbox.checked : false,
+            }
         };
-        searchResultsContainer.appendChild(item);
-      });
+
+        if (!events[eventDateStr]) {
+            events[eventDateStr] = [];
+        }
+        events[eventDateStr].push(newEvent);
+        events[eventDateStr].sort((a, b) => {
+            if (a.allday && !b.allday) return -1;
+            if (!a.allday && b.allday) return 1;
+            if (a.allday && b.allday) return 0; // Both all-day, keep order or sort by title?
+            // If both have time
+            if (a.time && b.time) return a.time.localeCompare(b.time);
+            // If one has time and the other doesn't (shouldn't happen if not all-day)
+            if (a.time) return -1;
+            if (b.time) return 1;
+            return 0;
+        });
+
+
+        closeModal();
+        renderCalendar(currentDate); // This also calls saveEventsToLocalStorage()
     }
+
 
     function showUpcomingEvents() {
-      const now = dayjs();
-      const futureEvents = [];
-      for (const date in events) {
-        if (dayjs(date).isAfter(now, 'day')) {
-          events[date].forEach(e => {
-            futureEvents.push({ date, ...e });
-          });
+        const now = dayjs();
+        const futureEvents = [];
+
+        Object.keys(events).forEach(dateKey => {
+            const eventDateObj = dayjs(dateKey);
+            if (eventDateObj.isSameOrAfter(now, 'day')) {
+                events[dateKey].forEach((event, index) => {
+                    let eventDateTime = eventDateObj.startOf('day'); // Base for sorting
+                    if (!event.allday && event.time) {
+                        const [hour, minute] = event.time.split(':');
+                        eventDateTime = eventDateObj.hour(parseInt(hour)).minute(parseInt(minute));
+                    }
+                    futureEvents.push({
+                        dateKey,
+                        datetime: eventDateTime,
+                        event,
+                        index
+                    });
+                });
+            }
+        });
+
+        futureEvents.sort((a, b) => a.datetime.unix() - b.datetime.unix());
+
+        if (futureEvents.length === 0) {
+            upcomingEventsList.innerHTML = `<div class="no-events-message">No upcoming events found.</div>`;
+        } else {
+            upcomingEventsList.innerHTML = futureEvents.map(item => {
+                const eventDate = dayjs(item.dateKey);
+                const dayOfWeek = eventDate.format('dddd');
+                let timeInfo = item.event.allday ? ' (All day)' : (item.event.time ? ` at ${formatTo12Hour(item.event.time)}` : ' (Time not set)');
+
+                return `<div class="upcoming-event-item" onclick="viewEvent('${item.dateKey}', ${item.index}); closeUpcomingModal();">
+                            <strong>${dayOfWeek}, ${eventDate.format('MMMM D, YYYY')}</strong>
+                            ${item.event.title}${timeInfo}
+                        </div>`;
+            }).join('');
         }
-      }
-      futureEvents.sort((a, b) => dayjs(a.date).unix() - dayjs(b.date).unix());
-
-      upcomingEventsList.innerHTML = futureEvents.map(e => {
-        const eventDate = dayjs(e.date);
-        const dayOfWeek = eventDate.format('dddd');
-        return `<div class="upcoming-event-item">
-                  <strong>${dayOfWeek}, ${e.date}</strong>: ${e.title}${e.allday ? ' (All day)' : ' at ' + formatTo12Hour(e.time)}
-                </div>`;
-      }).join('');
-
-      upcomingEventsModal.style.display = 'block';
+        upcomingEventsModal.style.display = 'block';
     }
 
     function closeUpcomingModal() {
-      upcomingEventsModal.style.display = 'none';
+        upcomingEventsModal.style.display = 'none';
     }
 
     document.getElementById('prev-month').onclick = () => {
-      currentDate = currentDate.subtract(1, 'month');
-      renderCalendar(currentDate);
+        currentDate = currentDate.subtract(1, 'month');
+        renderCalendar(currentDate);
     };
 
     document.getElementById('next-month').onclick = () => {
-      currentDate = currentDate.add(1, 'month');
-      renderCalendar(currentDate);
+        currentDate = currentDate.add(1, 'month');
+        renderCalendar(currentDate);
     };
 
+    // Initial setup
     renderCalendar(currentDate);
-  </script>
+    toggleTimeSelection();
+    toggleReminderOptions();
+
+    </script>
 </body>
 </html>
