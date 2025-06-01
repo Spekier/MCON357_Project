@@ -208,6 +208,25 @@
 
 </head>
 <body>
+
+    <nav class="navbar is-primary" role="navigation">
+    <div class="container">
+        <div class="navbar-menu is-active">
+            <div class="navbar-end">
+                <a href="{{ url_for('main.index') }}" class="navbar-item has-text-white">Home</a>
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('main.profile') }}" class="navbar-item has-text-white">Profile</a>
+                    <a href="{{ url_for('auth.logout') }}" class="navbar-item has-text-white">Logout</a>
+                {% else %}
+                    <a href="{{ url_for('auth.login') }}" class="navbar-item has-text-white">Login</a>
+                    <a href="{{ url_for('auth.signup') }}" class="navbar-item has-text-white">Sign Up</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
+
+    
     <div class="title">My Calendar</div>
     <div class="calendar-container">
         <div class="calendar">
