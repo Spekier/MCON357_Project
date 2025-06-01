@@ -215,7 +215,7 @@
             <div class="navbar-end">
                 <a href="{{ url_for('main.index') }}" class="navbar-item has-text-white">Home</a>
                 {% if current_user.is_authenticated %}
-                    <a href="{{ url_for('main.profile') }}" class="navbar-item has-text-white">Profile</a>
+                    <a href="{{ url_for('main.profile') }}" class="navbar-item has-text-white">Calendar</a>
                     <a href="{{ url_for('auth.logout') }}" class="navbar-item has-text-white">Logout</a>
                 {% else %}
                     <a href="{{ url_for('auth.login') }}" class="navbar-item has-text-white">Login</a>
