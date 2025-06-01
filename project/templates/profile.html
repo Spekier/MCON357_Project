@@ -288,6 +288,7 @@
         <h3>Upcoming Events</h3>
         <div class="upcoming-events-list" id="upcoming-events-list"></div>
         <div class="modal-buttons">
+            <button id="toggle-parshiot-btn" onclick="toggleParshiotVisibilityInList()" style="padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; background-color: #6c757d; color: white; margin-right: 10px;">Hide Parshiot</button>
             <button class="cancel" onclick="closeUpcomingModal()">Close</button>
         </div>
     </div>
@@ -318,6 +319,8 @@
         const viewEventTitle = document.getElementById('view-event-title');
         const viewEventTime = document.getElementById('view-event-time');
 
+        let selectedEventIsParsha = false;
+        let parshiotVisibleInList = true; 
         let currentDate = dayjs();
         const events = {};
         const parshaData = {}; // To store fetched parsha data
@@ -575,7 +578,7 @@
                 const eventDateObj = dayjs(dateKey);
                 if (eventDateObj.isAfter(now, 'day') || eventDateObj.isSame(now, 'day')) {
                     events[dateKey].forEach(e => {
-                        futureEvents.push({ date: dateKey, ...e, type: 'User Event' });
+                        futureEvents.push({ date: dateKey, ...e, type: 'User Event',  isParsha: false });
                     });
                 }
             }
@@ -606,11 +609,16 @@
                     details += ` at ${formatTo12Hour(e.time)}`;
                 }
 
-                return `<div class="upcoming-event-item">
+                 return `<div class="upcoming-event-item ${e.isParsha ? 'upcoming-parsha-item' : ''}">
                             <strong>${dayOfWeek}, ${e.date}</strong>: ${details}
                             ${e.isParsha && e.link ? ` <a href="${e.link}" target="_blank">(Details)</a>` : ''}
                         </div>`;
             }).join('');
+            parshiotVisibleInList = true; // Default to visible
+            const toggleBtn = document.getElementById('toggle-parshiot-btn');
+            if (toggleBtn) {
+                 toggleBtn.textContent = 'Hide Parshiot';
+            }
 
             upcomingEventsModal.style.display = 'block';
         }
