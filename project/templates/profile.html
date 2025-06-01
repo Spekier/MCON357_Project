@@ -426,6 +426,20 @@
         }
 
 
+        function toggleParshiotVisibilityInList() {
+            const parshaItems = upcomingEventsList.querySelectorAll('.upcoming-parsha-item');
+            const toggleBtn = document.getElementById('toggle-parshiot-btn');
+
+            parshiotVisibleInList = !parshiotVisibleInList; // Toggle the state
+
+            parshaItems.forEach(item => {
+                item.style.display = parshiotVisibleInList ? '' : 'none'; // Use '' to revert to default display (block, flex, etc.)
+            });
+
+            if (toggleBtn) {
+                toggleBtn.textContent = parshiotVisibleInList ? 'Hide Parshiot' : 'Show Parshiot';
+            }
+        }
         function openAddEventModal(dateStr = currentDate.format('YYYY-MM-DD')) {
             selectedDate = dateStr; // Keep selectedDate as string for consistency
             addEventDateInput.value = selectedDate;
