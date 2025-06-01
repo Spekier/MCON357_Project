@@ -69,7 +69,7 @@
         .days {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            grid-auto-rows: 100px;
+            grid-auto-rows: 100px; /* Or adjust as needed */
             gap: 5px;
             margin-top: 10px;
         }
@@ -85,6 +85,7 @@
 
         .day-number {
             font-weight: bold;
+            margin-bottom: 3px;
         }
 
         .day-events {
@@ -95,7 +96,20 @@
 
         .day-events li {
             margin-top: 5px;
+            background-color: #e0e0e0; /* Example color for regular events */
+            padding: 2px 4px;
+            border-radius: 3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
+
+        .parsha-event {
+            background-color: #d1e7dd !important; /* Light green for Parsha */
+            color: #0f5132;
+            font-weight: bold;
+        }
+
 
         .action-buttons {
             display: flex;
@@ -161,6 +175,10 @@
             background-color: #5e72e4;
             color: white;
         }
+        .modal-buttons .delete {
+            background-color: #dc3545;
+            color: white;
+        }
 
         .upcoming-events-list {
             max-height: 200px;
@@ -184,6 +202,10 @@
         }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/isoWeek.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/utc.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/timezone.js"></script>
+
 </head>
 <body>
     <div class="title">My Calendar</div>
@@ -239,8 +261,7 @@
         <p id="view-event-time"></p>
         <div class="modal-buttons">
             <button class="cancel" onclick="closeViewModal()">Close</button>
-            <button class="save" onclick="openEditEventModal()">Edit</button>
-            <button class="delete" onclick="deleteSelectedEvent()">Delete</button>
+            <button classs="edit" onclick="openEditEventModalFromView()">Edit</button> <button class="delete" onclick="deleteSelectedEvent()">Delete</button>
         </div>
     </div>
 
@@ -253,6 +274,10 @@
     </div>
 
     <script>
+        dayjs.extend(window.dayjs_plugin_isoWeek);
+        dayjs.extend(window.dayjs_plugin_utc);
+        dayjs.extend(window.dayjs_plugin_timezone);
+
         const monthYearLabel = document.getElementById('month-year');
         const daysContainer = document.getElementById('calendar-days');
         const addEventModal = document.getElementById('add-event-modal');
@@ -276,10 +301,14 @@
 
         let currentDate = dayjs();
         const events = {};
+        const parshaData = {}; // To store fetched parsha data
         let selectedDate = null;
-        let selectedEventIndex = null;
+        let selectedEvent = null; // Store the whole event object for simplicity
+        let selectedEventIsParsha = false;
+
 
         function formatTo12Hour(time24) {
+            if (!time24) return '';
             const [hour, minute] = time24.split(':');
             const h = parseInt(hour);
             const ampm = h >= 12 ? 'PM' : 'AM';
@@ -287,14 +316,58 @@
             return `${hour12}:${minute} ${ampm}`;
         }
 
-        function renderCalendar(date) {
-            const startOfMonth = date.startOf('month');
-            const endOfMonth = date.endOf('month');
-            const startDay = startOfMonth.day();
-            const daysInMonth = endOfMonth.date();
+        async function fetchParshaForMonth(year, month) {
+            // Hebcal API expects month to be 1-indexed
+            const hebcalMonth = month + 1;
+            // Fetches for the whole year to simplify; you could optimize to fetch only current/next month
+            const url = `https://www.hebcal.com/hebcal?v=1&cfg=json&maj=on&min=on&mod=on&nx=on&year=${year}&month=x&ss=on&mf=on&c=off&geo=geoname&geonameid=5128581&M=off&s=on`; // Added &s=on for Parsha
 
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    console.error("Hebcal API Error:", response.status);
+                    return;
+                }
+                const data = await response.json();
+                if (data && data.items) {
+                    data.items.forEach(item => {
+                        if (item.category === 'parashat') { // Check for parsha category
+                            const itemDate = dayjs(item.date).format('YYYY-MM-DD');
+                            if (!parshaData[itemDate]) parshaData[itemDate] = [];
+                            parshaData[itemDate].push({
+                                title: item.title,
+                                hebrew: item.hebrew,
+                                link: item.link,
+                                allday: true, // Parsha is an all-day event
+                                isParsha: true // Flag to identify parsha events
+                            });
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error("Error fetching Parsha data:", error);
+            }
+        }
+
+
+        async function renderCalendar(date) {
             monthYearLabel.textContent = date.format('MMMM YYYY');
             daysContainer.innerHTML = '';
+
+            // Fetch Parsha data for the current view's year if not already fetched
+            const year = date.year();
+            // A simple check to avoid refetching for the same year constantly
+            // You might want a more robust check if user navigates years frequently
+            if (!parshaData[`${year}-loaded`]) {
+                await fetchParshaForMonth(year, date.month());
+                parshaData[`${year}-loaded`] = true; // Mark as loaded
+            }
+
+
+            const startOfMonth = date.startOf('month');
+            const endOfMonth = date.endOf('month');
+            const startDay = startOfMonth.day(); // 0 for Sunday, 1 for Monday...
+            const daysInMonth = endOfMonth.date();
 
             for (let i = 0; i < startDay; i++) {
                 const emptyDiv = document.createElement('div');
@@ -302,17 +375,37 @@
             }
 
             for (let i = 1; i <= daysInMonth; i++) {
-                const day = document.createElement('div');
-                const dayKey = date.date(i).format('YYYY-MM-DD');
-                const eventList = events[dayKey]?.map((e, index) => `<li onclick='viewEvent("${dayKey}", ${index}); event.stopPropagation();'>${e.title}</li>`).join('') || '';
-                day.innerHTML = `<div class="day-number">${i}</div><ul class="day-events">${eventList}</ul>`;
-                day.onclick = () => openAddEventModal(dayKey);
-                daysContainer.appendChild(day);
+                const dayDiv = document.createElement('div');
+                const currentDayObj = date.date(i);
+                const dayKey = currentDayObj.format('YYYY-MM-DD');
+
+                let dayContent = `<div class="day-number">${i}</div><ul class="day-events">`;
+
+                // Display user events
+                if (events[dayKey]) {
+                    events[dayKey].forEach((event, index) => {
+                        dayContent += `<li onclick='viewEvent("${dayKey}", ${index}, false); event.stopPropagation();'>${event.title}</li>`;
+                    });
+                }
+
+                // Display Parsha if it's Saturday (day() === 6)
+                if (currentDayObj.day() === 6 && parshaData[dayKey]) {
+                     parshaData[dayKey].forEach((parsha, index) => {
+                        // Use a different view function or pass a flag if Parsha events have different interactions
+                        dayContent += `<li class="parsha-event" onclick='viewEvent("${dayKey}", ${index}, true); event.stopPropagation();'>${parsha.title}</li>`;
+                    });
+                }
+
+                dayContent += `</ul>`;
+                dayDiv.innerHTML = dayContent;
+                dayDiv.onclick = () => openAddEventModal(dayKey);
+                daysContainer.appendChild(dayDiv);
             }
         }
 
-        function openAddEventModal(date = currentDate.format('YYYY-MM-DD')) {
-            selectedDate = date;
+
+        function openAddEventModal(dateStr = currentDate.format('YYYY-MM-DD')) {
+            selectedDate = dateStr; // Keep selectedDate as string for consistency
             addEventDateInput.value = selectedDate;
             addEventTitleInput.value = '';
             addEventTimeInput.value = '';
@@ -324,48 +417,96 @@
             addEventModal.style.display = 'none';
         }
 
-        function openEditEventModal() {
-            const event = events[selectedDate][selectedEventIndex];
+        function openEditEventModalFromView() {
+            if (!selectedEvent || selectedEventIsParsha) { // Don't allow editing Parsha
+                alert("Parshiot cannot be edited.");
+                return;
+            }
+            closeViewModal(); // Close view modal before opening edit
             editEventDateInput.value = selectedDate;
-            editEventTitleInput.value = event.title;
-            editEventTimeInput.value = event.time || '';
-            editEventAllDayCheckbox.checked = event.allday || false;
+            editEventTitleInput.value = selectedEvent.title;
+            editEventTimeInput.value = selectedEvent.allday ? '' : selectedEvent.time || '';
+            editEventAllDayCheckbox.checked = selectedEvent.allday || false;
             editEventModal.style.display = 'block';
         }
+
 
         function closeEditEventModal() {
             editEventModal.style.display = 'none';
         }
 
-        function viewEvent(date, index) {
-            selectedDate = date;
-            selectedEventIndex = index;
-            const event = events[date][index];
-            viewEventTitle.textContent = event.title;
-            viewEventTime.textContent = event.allday ? 'All day' : (event.time ? formatTo12Hour(event.time) : '');
+        function viewEvent(dateKey, index, isParsha) {
+            selectedDate = dateKey;
+            selectedEventIsParsha = isParsha;
+            const eventSource = isParsha ? parshaData : events;
+
+            if (!eventSource[dateKey] || !eventSource[dateKey][index]) return;
+            selectedEvent = eventSource[dateKey][index];
+
+
+            viewEventTitle.textContent = selectedEvent.title;
+            let timeText = '';
+            if (selectedEvent.allday) {
+                timeText = 'All day';
+                if (isParsha && selectedEvent.hebrew) {
+                     timeText += ` (${selectedEvent.hebrew})`;
+                }
+            } else if (selectedEvent.time) {
+                timeText = formatTo12Hour(selectedEvent.time);
+            }
+            viewEventTime.textContent = timeText;
+
+            const editButton = eventViewModal.querySelector("button.edit, button[onclick*='openEditEventModalFromView']"); // More robust selector
+            const deleteButton = eventViewModal.querySelector("button.delete, button[onclick*='deleteSelectedEvent']");
+
+            if (isParsha) {
+                if(editButton) editButton.style.display = 'none';
+                if(deleteButton) deleteButton.style.display = 'none';
+                if (selectedEvent.link) { // Add a link to Hebcal if available
+                    viewEventTitle.innerHTML = `<a href="${selectedEvent.link}" target="_blank">${selectedEvent.title}</a>`;
+                }
+            } else {
+                 if(editButton) editButton.style.display = 'inline-block';
+                 if(deleteButton) deleteButton.style.display = 'inline-block';
+            }
             eventViewModal.style.display = 'block';
         }
 
         function closeViewModal() {
             eventViewModal.style.display = 'none';
+            selectedEvent = null; // Clear selected event
         }
 
         function deleteSelectedEvent() {
-            events[selectedDate].splice(selectedEventIndex, 1);
-            if (events[selectedDate].length === 0) delete events[selectedDate];
+            if (!selectedEvent || selectedEventIsParsha || !events[selectedDate]) return; // Cannot delete parsha or non-existent event
+
+            // Find the index of the selectedEvent in the events[selectedDate] array
+            const eventIndex = events[selectedDate].findIndex(event => event === selectedEvent);
+
+            if (eventIndex > -1) {
+                events[selectedDate].splice(eventIndex, 1);
+                if (events[selectedDate].length === 0) {
+                    delete events[selectedDate];
+                }
+            }
             closeViewModal();
             renderCalendar(currentDate);
         }
+
 
         function saveEvent() {
             const title = addEventTitleInput.value.trim();
             const time = addEventTimeInput.value;
             const allday = addEventAllDayCheckbox.checked;
-            const date = addEventDateInput.value;
-            if (!title || (!allday && !time) || !date) return;
+            const date = addEventDateInput.value; // This is the selectedDate set in openAddEventModal
+
+            if (!title || (!allday && !time && !title.toLowerCase().includes("parsha")) || !date) { // Adjusted condition
+                 alert("Please provide a title and either a time or mark as all-day.");
+                 return;
+            }
 
             if (!events[date]) events[date] = [];
-            events[date].push({ title, time, allday });
+            events[date].push({ title, time: allday ? '' : time, allday });
             closeAddEventModal();
             renderCalendar(currentDate);
         }
@@ -374,32 +515,81 @@
             const title = editEventTitleInput.value.trim();
             const time = editEventTimeInput.value;
             const allday = editEventAllDayCheckbox.checked;
-            const date = editEventDateInput.value;
-            if (!title || (!allday && !time) || !date) return;
+            const date = editEventDateInput.value; // Date from the edit form
 
-            events[selectedDate][selectedEventIndex] = { title, time, allday };
+            if (!title || (!allday && !time) || !date) {
+                alert("Please provide a title and either a time or mark as all-day.");
+                return;
+            }
+
+            // Find the original event to update it
+            // This assumes selectedDate and selectedEvent are still correctly set from viewEvent -> openEditEventModal
+            if (!selectedEvent || !events[selectedDate]) return;
+
+            const eventIndex = events[selectedDate].findIndex(event => event === selectedEvent);
+            if (eventIndex === -1) return; // Event not found
+
+            // If the date was changed in the edit form
+            if (date !== selectedDate) {
+                // Remove from old date
+                events[selectedDate].splice(eventIndex, 1);
+                if (events[selectedDate].length === 0) delete events[selectedDate];
+                // Add to new date
+                if (!events[date]) events[date] = [];
+                events[date].push({ title, time: allday ? '' : time, allday });
+            } else {
+                // Update in place
+                events[selectedDate][eventIndex] = { title, time: allday ? '' : time, allday };
+            }
+
             closeEditEventModal();
-            closeViewModal();
             renderCalendar(currentDate);
         }
+
 
         function showUpcomingEvents() {
             const now = dayjs();
             const futureEvents = [];
-            for (const date in events) {
-                if (dayjs(date).isAfter(now, 'day') || dayjs(date).isSame(now, 'day')) {
-                    events[date].forEach(e => {
-                        futureEvents.push({ date, ...e });
+
+            // Add user events
+            for (const dateKey in events) {
+                const eventDateObj = dayjs(dateKey);
+                if (eventDateObj.isAfter(now, 'day') || eventDateObj.isSame(now, 'day')) {
+                    events[dateKey].forEach(e => {
+                        futureEvents.push({ date: dateKey, ...e, type: 'User Event' });
                     });
                 }
             }
+             // Add Parsha events
+            for (const dateKey in parshaData) {
+                if (dateKey.endsWith('-loaded')) continue; // Skip loader flags
+
+                const eventDateObj = dayjs(dateKey);
+                // Only include Parshiot that are on or after today AND are on a Saturday
+                if ((eventDateObj.isAfter(now, 'day') || eventDateObj.isSame(now, 'day')) && eventDateObj.day() === 6) {
+                    parshaData[dateKey].forEach(e => {
+                        futureEvents.push({ date: dateKey, ...e, type: 'Parsha' });
+                    });
+                }
+            }
+
+
             futureEvents.sort((a, b) => dayjs(a.date).unix() - dayjs(b.date).unix());
 
             upcomingEventsList.innerHTML = futureEvents.map(e => {
-                const eventDate = dayjs(e.date);
-                const dayOfWeek = eventDate.format('dddd');
+                const eventDateObj = dayjs(e.date);
+                const dayOfWeek = eventDateObj.format('dddd');
+                let details = e.title;
+                if (e.allday) {
+                    details += ' (All day)';
+                    if (e.isParsha && e.hebrew) details += ` - ${e.hebrew}`;
+                } else if (e.time) {
+                    details += ` at ${formatTo12Hour(e.time)}`;
+                }
+
                 return `<div class="upcoming-event-item">
-                            <strong>${dayOfWeek}, ${e.date}</strong>: ${e.title}${e.allday ? ' (All day)' : (e.time ? ' at ' + formatTo12Hour(e.time) : '')}
+                            <strong>${dayOfWeek}, ${e.date}</strong>: ${details}
+                            ${e.isParsha && e.link ? ` <a href="${e.link}" target="_blank">(Details)</a>` : ''}
                         </div>`;
             }).join('');
 
@@ -420,6 +610,7 @@
             renderCalendar(currentDate);
         };
 
+        // Initial render
         renderCalendar(currentDate);
     </script>
 </body>
