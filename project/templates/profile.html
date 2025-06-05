@@ -16,37 +16,8 @@
         body {
             background-color: #f9f9f9;
             color: #333;
-            padding: 20px; /* Apply padding to body, not just specific elements if navbar is full width */
+            padding: 20px;
         }
-
-        nav.navbar.is-primary { /* Targeting the specific navbar from your template */
-            background-color: #5e72e4; /* A common primary blue */
-            padding: 0; /* Reset padding if Bulma handles it */
-            margin-bottom: 20px;
-        }
-        nav.navbar.is-primary .container {
-            max-width: 960px; /* Or your preferred container width */
-            margin: 0 auto;
-            display: flex;
-            justify-content: space-between; /* For brand and menu */
-        }
-        nav.navbar.is-primary .navbar-menu {
-            display: flex; /* Ensure menu items are in a row */
-            align-items: center; /* Vertically align items */
-        }
-        nav.navbar.is-primary .navbar-end {
-            display: flex;
-            margin-left: auto; /* Push to the right */
-        }
-        nav.navbar.is-primary .navbar-item.has-text-white {
-            color: white !important; /* Ensure text is white */
-            text-decoration: none;
-            padding: 0.5rem 0.75rem;
-        }
-        nav.navbar.is-primary .navbar-item.has-text-white:hover {
-            background-color: rgba(0,0,0,0.1); /* Slight hover effect */
-        }
-
 
         .title {
             text-align: center;
@@ -61,7 +32,7 @@
 
         .calendar {
             width: 90%;
-            max-width: 800px; 
+            max-width: 800px;
             background: #fff;
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -98,7 +69,7 @@
         .days {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            grid-auto-rows: minmax(100px, auto); 
+            grid-auto-rows: 100px; /* Or adjust as needed */
             gap: 5px;
             margin-top: 10px;
         }
@@ -110,7 +81,6 @@
             position: relative;
             overflow-y: auto;
             cursor: pointer;
-            max-height: 150px; 
         }
 
         .day-number {
@@ -126,7 +96,7 @@
 
         .day-events li {
             margin-top: 5px;
-            background-color: #e0e0e0; 
+            background-color: #e0e0e0; /* Example color for regular events */
             padding: 2px 4px;
             border-radius: 3px;
             white-space: nowrap;
@@ -135,22 +105,11 @@
         }
 
         .parsha-event {
-            background-color: #d1e7dd !important; 
+            background-color: #d1e7dd !important; /* Light green for Parsha */
             color: #0f5132;
             font-weight: bold;
         }
 
-        .holiday-event {
-            background-color: #fff3cd !important; 
-            color: #664d03;
-            font-weight: bold;
-        }
-
-        .candlelighting-event {
-            background-color: #f8d7da !important; 
-            color: #58151c;
-            font-size: 11px; 
-        }
 
         .action-buttons {
             display: flex;
@@ -196,31 +155,21 @@
 
         .modal-buttons {
             display: flex;
-            justify-content: flex-end; 
-            gap: 10px; 
+            justify-content: space-between;
             margin-top: 10px;
-            flex-wrap: wrap; 
         }
 
         .modal-buttons button {
-            padding: 8px 12px; 
+            padding: 8px 16px;
             border: none;
             border-radius: 6px;
             cursor: pointer;
-            background-color: #6c757d; 
-            color: white;
-        }
-        .modal-buttons button.cancel { 
-             background-color: #ccc;
-             color: #333;
-        }
-        /* Adjust specific cancel button to align right if it's not the last one due to dynamic edit button */
-        #event-view-modal .modal-buttons button.cancel {
-        }
-         #upcoming-events-modal .modal-buttons button.cancel {
-            margin-left: auto; /* Push close to the far right in this specific modal */
         }
 
+        .modal-buttons .cancel {
+            background-color: #ccc;
+            color: #333;
+        }
 
         .modal-buttons .save {
             background-color: #5e72e4;
@@ -232,7 +181,7 @@
         }
 
         .upcoming-events-list {
-            max-height: 250px; 
+            max-height: 200px;
             overflow-y: auto;
             margin: 10px 0;
         }
@@ -243,20 +192,6 @@
             padding: 8px;
             border-radius: 6px;
         }
-
-        .upcoming-parsha-item {
-            border-left: 3px solid #198754; 
-            padding-left: 5px;
-        }
-        .upcoming-holiday-item {
-            border-left: 3px solid #ffc107; 
-            padding-left: 5px;
-        }
-        .upcoming-candlelighting-item {
-            border-left: 3px solid #dc3545; 
-            padding-left: 5px;
-        }
-
 
         .date-picker-container {
             position: relative;
@@ -292,7 +227,7 @@
 </nav>
 
     
-    <div class="title">{{ name }}'s Calendar</div> 
+    <div class="title">{{ name }}'s Calendar</div>
     <div class="calendar-container">
         <div class="calendar">
             <div class="calendar-header">
@@ -343,7 +278,8 @@
     <div class="modal" id="event-view-modal">
         <h3 id="view-event-title"></h3>
         <p id="view-event-time"></p>
-        <div class="modal-buttons"> <button class="cancel" onclick="closeViewModal()">Close</button>
+        <div class="modal-buttons">
+            <button class="cancel" onclick="closeViewModal()">Close</button>
             <button class="delete" onclick="deleteSelectedEvent()">Delete</button>
         </div>
     </div>
@@ -352,9 +288,7 @@
         <h3>Upcoming Events</h3>
         <div class="upcoming-events-list" id="upcoming-events-list"></div>
         <div class="modal-buttons">
-            <button id="toggle-parsha-candles-btn" onclick="toggleParshaAndCandlesVisibilityInList()">Hide Parsha/Candles</button>
-            <button id="toggle-holidays-btn" onclick="toggleHolidaysVisibilityInList()">Hide Holidays</button>
-            <button class="cancel" onclick="closeUpcomingModal()">Close</button> 
+            <button class="cancel" onclick="closeUpcomingModal()">Close</button>
         </div>
     </div>
 
@@ -384,15 +318,12 @@
         const viewEventTitle = document.getElementById('view-event-title');
         const viewEventTime = document.getElementById('view-event-time');
 
-        let parshaAndCandlesVisibleInList = true; 
-        let holidaysVisibleInList = true;
-
         let currentDate = dayjs();
-        const events = {}; 
-        const hebcalData = {}; 
+        const events = {};
+        const parshaData = {}; // To store fetched parsha data
         let selectedDate = null;
-        let selectedEvent = null; 
-        let selectedEventType = null; 
+        let selectedEvent = null; // Store the whole event object for simplicity
+        let selectedEventIsParsha = false;
 
 
         function formatTo12Hour(time24) {
@@ -401,94 +332,89 @@
             const h = parseInt(hour);
             const ampm = h >= 12 ? 'PM' : 'AM';
             const hour12 = h % 12 || 12;
-            return `<span class="math-inline">\{hour12\}\:</span>{minute} ${ampm}`;
+            return `${hour12}:${minute} ${ampm}`;
         }
 
-        async function fetchHebcalDataForYear(year) {
-            const url = `https://www.hebcal.com/hebcal?v=1&cfg=json&maj=on&min=on&mod=on&nx=on&year=${year}&month=x&ss=on&mf=on&c=on&geo=geoname&geonameid=5128581&M=off&s=on`;
+        async function fetchParshaForMonth(year, month) {
+            // Hebcal API expects month to be 1-indexed
+            const hebcalMonth = month + 1;
+            // Fetches for the whole year to simplify; you could optimize to fetch only current/next month
+            const url = `https://www.hebcal.com/hebcal?v=1&cfg=json&maj=on&min=on&mod=on&nx=on&year=${year}&month=x&ss=on&mf=on&c=off&geo=geoname&geonameid=5128581&M=off&s=on`; // Added &s=on for Parsha
+
             try {
                 const response = await fetch(url);
                 if (!response.ok) {
-                    console.error("Hebcal API Error:", response.status, await response.text());
-                    hebcalData[`${year}-loaded`] = true; 
+                    console.error("Hebcal API Error:", response.status);
                     return;
                 }
                 const data = await response.json();
                 if (data && data.items) {
                     data.items.forEach(item => {
-                        const itemDateKey = dayjs(item.date).format('YYYY-MM-DD');
-                        if (!hebcalData[itemDateKey]) hebcalData[itemDateKey] = [];
-                        let eventObject = null;
-                        if (item.category === 'parashat') {
-                            eventObject = { title: item.title, hebrew: item.hebrew, link: item.link, allday: true, eventType: 'parsha' };
-                        } else if (item.category === 'holiday' || item.yomtov === true) {
-                             eventObject = { title: item.title, hebrew: item.hebrew, link: item.link, memo: item.memo, allday: true, eventType: 'holiday' };
-                        } else if (item.category === 'candles') {
-                            eventObject = { title: item.title, link: item.link, allday: false, dateFull: item.date, eventType: 'candlelighting' };
-                        }
-                        if (eventObject) {
-                             const exists = hebcalData[itemDateKey].some(e => e.title === eventObject.title && e.eventType === eventObject.eventType);
-                             if (!exists) hebcalData[itemDateKey].push(eventObject);
+                        if (item.category === 'parashat') { // Check for parsha category
+                            const itemDate = dayjs(item.date).format('YYYY-MM-DD');
+                            if (!parshaData[itemDate]) parshaData[itemDate] = [];
+                            parshaData[itemDate].push({
+                                title: item.title,
+                                hebrew: item.hebrew,
+                                link: item.link,
+                                allday: true, // Parsha is an all-day event
+                                isParsha: true // Flag to identify parsha events
+                            });
                         }
                     });
                 }
             } catch (error) {
-                console.error("Error fetching or parsing Hebcal data:", error);
-                hebcalData[`${year}-loaded`] = true; 
+                console.error("Error fetching Parsha data:", error);
             }
         }
+
 
         async function renderCalendar(date) {
             monthYearLabel.textContent = date.format('MMMM YYYY');
             daysContainer.innerHTML = '';
+
+            // Fetch Parsha data for the current view's year if not already fetched
             const year = date.year();
-            if (!hebcalData[`${year}-loaded`]) {
-                await fetchHebcalDataForYear(year);
-                hebcalData[`${year}-loaded`] = true; 
+            // A simple check to avoid refetching for the same year constantly
+            // You might want a more robust check if user navigates years frequently
+            if (!parshaData[`${year}-loaded`]) {
+                await fetchParshaForMonth(year, date.month());
+                parshaData[`${year}-loaded`] = true; // Mark as loaded
             }
+
+
             const startOfMonth = date.startOf('month');
             const endOfMonth = date.endOf('month');
-            const startDayOfWeek = startOfMonth.day(); 
+            const startDay = startOfMonth.day(); // 0 for Sunday, 1 for Monday...
             const daysInMonth = endOfMonth.date();
-            for (let i = 0; i < startDayOfWeek; i++) {
-                daysContainer.appendChild(document.createElement('div'));
+
+            for (let i = 0; i < startDay; i++) {
+                const emptyDiv = document.createElement('div');
+                daysContainer.appendChild(emptyDiv);
             }
+
             for (let i = 1; i <= daysInMonth; i++) {
                 const dayDiv = document.createElement('div');
                 const currentDayObj = date.date(i);
                 const dayKey = currentDayObj.format('YYYY-MM-DD');
+
                 let dayContent = `<div class="day-number">${i}</div><ul class="day-events">`;
+
+                // Display user events
                 if (events[dayKey]) {
                     events[dayKey].forEach((event, index) => {
-                        const title = event.title || "Untitled Event";
-                        dayContent += `<li onclick='viewEvent("${dayKey}", <span class="math-inline">\{index\}, "user"\); event\.stopPropagation\(\);'\></span>{title}</li>`;
+                        dayContent += `<li onclick='viewEvent("${dayKey}", ${index}, false); event.stopPropagation();'>${event.title}</li>`;
                     });
                 }
-                if (hebcalData[dayKey]) {
-                    hebcalData[dayKey].sort((a,b) => {
-                        if (a.allday && !b.allday) return -1;
-                        if (!a.allday && b.allday) return 1;
-                        if (a.eventType === 'candlelighting' && b.eventType !== 'candlelighting') return 1;
-                        if (a.eventType !== 'candlelighting' && b.eventType === 'candlelighting') return -1;
-                        return (a.title || "").localeCompare(b.title || "");
-                    }).forEach((event, index) => {
-                        let eventClass = '';
-                        let displayTitle = event.title || "Hebcal Event";
-                        let shouldRender = false;
-                        if (event.eventType === 'parsha') {
-                            if (currentDayObj.day() === 6) { 
-                                eventClass = 'parsha-event'; shouldRender = true;
-                            }
-                        } else if (event.eventType === 'holiday') {
-                            eventClass = 'holiday-event'; shouldRender = true;
-                        } else if (event.eventType === 'candlelighting') {
-                            eventClass = 'candlelighting-event'; shouldRender = true;
-                        }
-                        if (shouldRender) {
-                            dayContent += `<li class="<span class="math-inline">\{eventClass\}" onclick\='viewEvent\("</span>{dayKey}", <span class="math-inline">\{index\}, "</span>{event.eventType}"); event.stopPropagation();'>${displayTitle}</li>`;
-                        }
+
+                // Display Parsha if it's Saturday (day() === 6)
+                if (currentDayObj.day() === 6 && parshaData[dayKey]) {
+                     parshaData[dayKey].forEach((parsha, index) => {
+                        // Use a different view function or pass a flag if Parsha events have different interactions
+                        dayContent += `<li class="parsha-event" onclick='viewEvent("${dayKey}", ${index}, true); event.stopPropagation();'>${parsha.title}</li>`;
                     });
                 }
+
                 dayContent += `</ul>`;
                 dayDiv.innerHTML = dayContent;
                 dayDiv.onclick = () => openAddEventModal(dayKey);
@@ -496,32 +422,9 @@
             }
         }
 
-        function toggleParshaAndCandlesVisibilityInList() {
-            parshaAndCandlesVisibleInList = !parshaAndCandlesVisibleInList; 
-            const itemsToToggle = upcomingEventsList.querySelectorAll('.upcoming-parsha-item, .upcoming-candlelighting-item');
-            const toggleBtn = document.getElementById('toggle-parsha-candles-btn');
-            itemsToToggle.forEach(item => {
-                item.style.display = parshaAndCandlesVisibleInList ? '' : 'none';
-            });
-            if (toggleBtn) {
-                toggleBtn.textContent = parshaAndCandlesVisibleInList ? 'Hide Parsha/Candles' : 'Show Parsha/Candles';
-            }
-        }
-
-        function toggleHolidaysVisibilityInList() {
-            holidaysVisibleInList = !holidaysVisibleInList; 
-            const holidayItems = upcomingEventsList.querySelectorAll('.upcoming-holiday-item');
-            const toggleBtn = document.getElementById('toggle-holidays-btn');
-            holidayItems.forEach(item => {
-                item.style.display = holidaysVisibleInList ? '' : 'none';
-            });
-            if (toggleBtn) {
-                toggleBtn.textContent = holidaysVisibleInList ? 'Hide Holidays' : 'Show Holidays';
-            }
-        }
 
         function openAddEventModal(dateStr = currentDate.format('YYYY-MM-DD')) {
-            selectedDate = dateStr; 
+            selectedDate = dateStr; // Keep selectedDate as string for consistency
             addEventDateInput.value = selectedDate;
             addEventTitleInput.value = '';
             addEventTimeInput.value = '';
@@ -529,210 +432,205 @@
             addEventModal.style.display = 'block';
         }
 
-        function closeAddEventModal() { addEventModal.style.display = 'none'; }
-        
+        function closeAddEventModal() {
+            addEventModal.style.display = 'none';
+        }
+
         function openEditEventModalFromView() {
-            if (!selectedEvent || selectedEventType === 'parsha' || selectedEventType === 'holiday' || selectedEventType === 'candlelighting') {
-                alert("This type of event cannot be edited."); return;
+            if (!selectedEvent || selectedEventIsParsha) { // Don't allow editing Parsha
+                alert("Parshiot cannot be edited.");
+                return;
             }
-            closeViewModal(); 
-            editEventDateInput.value = selectedDate; 
+            closeViewModal(); // Close view modal before opening edit
+            editEventDateInput.value = selectedDate;
             editEventTitleInput.value = selectedEvent.title;
             editEventTimeInput.value = selectedEvent.allday ? '' : selectedEvent.time || '';
             editEventAllDayCheckbox.checked = selectedEvent.allday || false;
             editEventModal.style.display = 'block';
         }
 
-        function closeEditEventModal() { editEventModal.style.display = 'none'; }
 
-        function viewEvent(dateKey, index, eventType) {
-            selectedDate = dateKey; selectedEventType = eventType; 
-            const isHebcalEvent = (eventType === 'parsha' || eventType === 'holiday' || eventType === 'candlelighting');
-            const eventSource = isHebcalEvent ? hebcalData : events;
-            if (!eventSource[dateKey] || !eventSource[dateKey][index]) {
-                console.warn("Event not found for view:", dateKey, index, eventType); return;
-            }
+        function closeEditEventModal() {
+            editEventModal.style.display = 'none';
+        }
+
+        function viewEvent(dateKey, index, isParsha) {
+            selectedDate = dateKey;
+            selectedEventIsParsha = isParsha;
+            const eventSource = isParsha ? parshaData : events;
+
+            if (!eventSource[dateKey] || !eventSource[dateKey][index]) return;
             selectedEvent = eventSource[dateKey][index];
-            viewEventTitle.textContent = selectedEvent.title || "Event Details"; 
+
+
+            viewEventTitle.textContent = selectedEvent.title;
             let timeText = '';
             if (selectedEvent.allday) {
                 timeText = 'All day';
-                if ((eventType === 'parsha' || eventType === 'holiday') && selectedEvent.hebrew) timeText += ` (${selectedEvent.hebrew})`;
-            } else if (eventType === 'candlelighting' && selectedEvent.dateFull) {
-                 timeText = dayjs(selectedEvent.dateFull).format('h:mm A');
-                 if (selectedEvent.hebrew) timeText += ` (${selectedEvent.hebrew})`;
-            } else if (selectedEvent.time) { 
+                if (isParsha && selectedEvent.hebrew) {
+                     timeText += ` (${selectedEvent.hebrew})`;
+                }
+            } else if (selectedEvent.time) {
                 timeText = formatTo12Hour(selectedEvent.time);
             }
             viewEventTime.textContent = timeText;
-            const modalButtonsContainer = eventViewModal.querySelector(".modal-buttons");
-            const deleteButton = modalButtonsContainer.querySelector("button.delete");
-            let editButton = modalButtonsContainer.querySelector("button.edit-dynamic");
-            if (editButton) editButton.remove(); 
-            if (!isHebcalEvent) { 
-                editButton = document.createElement('button');
-                editButton.textContent = "Edit"; editButton.className = "edit-dynamic"; 
-                editButton.style.backgroundColor = '#5e72e4'; // Match save button style
-                editButton.style.color = 'white';
-                editButton.onclick = openEditEventModalFromView;
-                modalButtonsContainer.insertBefore(editButton, deleteButton);
-            }
-            if (isHebcalEvent) {
+
+            const editButton = eventViewModal.querySelector("button.edit, button[onclick*='openEditEventModalFromView']"); // More robust selector
+            const deleteButton = eventViewModal.querySelector("button.delete, button[onclick*='deleteSelectedEvent']");
+
+            if (isParsha) {
+                if(editButton) editButton.style.display = 'none';
                 if(deleteButton) deleteButton.style.display = 'none';
-                if (selectedEvent.link) viewEventTitle.innerHTML = `<a href="<span class="math-inline">\{selectedEvent\.link\}" target\="\_blank" rel\="noopener noreferrer"\></span>{selectedEvent.title}</a>`;
-            } else { 
-                if(deleteButton) deleteButton.style.display = 'inline-block';
+                if (selectedEvent.link) { // Add a link to Hebcal if available
+                    viewEventTitle.innerHTML = `<a href="${selectedEvent.link}" target="_blank">${selectedEvent.title}</a>`;
+                }
+            } else {
+                 if(editButton) editButton.style.display = 'inline-block';
+                 if(deleteButton) deleteButton.style.display = 'inline-block';
             }
             eventViewModal.style.display = 'block';
         }
 
         function closeViewModal() {
-            eventViewModal.style.display = 'none'; selectedEvent = null; selectedEventType = null;
+            eventViewModal.style.display = 'none';
+            selectedEvent = null; // Clear selected event
         }
 
         function deleteSelectedEvent() {
-            if (!selectedEvent || selectedEventType === 'parsha' || selectedEventType === 'holiday' || selectedEventType === 'candlelighting') {
-                 alert("This type of event cannot be deleted."); return;
-            }
-            if (!events[selectedDate]) return;
-            const eventIndex = events[selectedDate].findIndex(event => event.title === selectedEvent.title && event.time === selectedEvent.time);
+            if (!selectedEvent || selectedEventIsParsha || !events[selectedDate]) return; // Cannot delete parsha or non-existent event
+
+            // Find the index of the selectedEvent in the events[selectedDate] array
+            const eventIndex = events[selectedDate].findIndex(event => event === selectedEvent);
+
             if (eventIndex > -1) {
                 events[selectedDate].splice(eventIndex, 1);
-                if (events[selectedDate].length === 0) delete events[selectedDate];
+                if (events[selectedDate].length === 0) {
+                    delete events[selectedDate];
+                }
             }
-            closeViewModal(); renderCalendar(currentDate);
+            closeViewModal();
+            renderCalendar(currentDate);
         }
+
 
         function saveEvent() {
             const title = addEventTitleInput.value.trim();
             const time = addEventTimeInput.value;
             const allday = addEventAllDayCheckbox.checked;
-            const date = addEventDateInput.value; 
-            if (!title || (!allday && !time) || !date) {
-                alert("Please provide a title and either a time or mark as all-day."); return;
+            const date = addEventDateInput.value; // This is the selectedDate set in openAddEventModal
+
+            if (!title || (!allday && !time && !title.toLowerCase().includes("parsha")) || !date) { // Adjusted condition
+                 alert("Please provide a title and either a time or mark as all-day.");
+                 return;
             }
+
             if (!events[date]) events[date] = [];
-            events[date].push({ title, time: allday ? '' : time, allday, eventType: 'user' });
-            closeAddEventModal(); renderCalendar(currentDate);
+            events[date].push({ title, time: allday ? '' : time, allday });
+            closeAddEventModal();
+            renderCalendar(currentDate);
         }
 
         function updateEvent() {
             const title = editEventTitleInput.value.trim();
             const time = editEventTimeInput.value;
             const allday = editEventAllDayCheckbox.checked;
-            const newDate = editEventDateInput.value; 
-            if (!title || (!allday && !time) || !newDate) {
-                alert("Please provide a title, date, and either a time or mark as all-day."); return;
+            const date = editEventDateInput.value; // Date from the edit form
+
+            if (!title || (!allday && !time) || !date) {
+                alert("Please provide a title and either a time or mark as all-day.");
+                return;
             }
-            if (!selectedEvent || !events[selectedDate] || selectedEventType !== 'user') return;
-            const eventIndex = events[selectedDate].findIndex(event => event.title === selectedEvent.title && event.time === selectedEvent.time);
-            if (eventIndex === -1) { console.error("Original event not found for update."); return; }
-            events[selectedDate].splice(eventIndex, 1);
-            if (events[selectedDate].length === 0) delete events[selectedDate];
-            if (!events[newDate]) events[newDate] = [];
-            events[newDate].push({ title, time: allday ? '' : time, allday, eventType: 'user' });
-            closeEditEventModal(); renderCalendar(currentDate);
+
+            // Find the original event to update it
+            // This assumes selectedDate and selectedEvent are still correctly set from viewEvent -> openEditEventModal
+            if (!selectedEvent || !events[selectedDate]) return;
+
+            const eventIndex = events[selectedDate].findIndex(event => event === selectedEvent);
+            if (eventIndex === -1) return; // Event not found
+
+            // If the date was changed in the edit form
+            if (date !== selectedDate) {
+                // Remove from old date
+                events[selectedDate].splice(eventIndex, 1);
+                if (events[selectedDate].length === 0) delete events[selectedDate];
+                // Add to new date
+                if (!events[date]) events[date] = [];
+                events[date].push({ title, time: allday ? '' : time, allday });
+            } else {
+                // Update in place
+                events[selectedDate][eventIndex] = { title, time: allday ? '' : time, allday };
+            }
+
+            closeEditEventModal();
+            renderCalendar(currentDate);
         }
+
 
         function showUpcomingEvents() {
             const now = dayjs();
-            let futureEvents = []; 
+            const futureEvents = [];
+
+            // Add user events
             for (const dateKey in events) {
                 const eventDateObj = dayjs(dateKey);
-                 events[dateKey].forEach(e => {
-                    if (e.allday) { 
-                        if (eventDateObj.isAfter(now, 'day') || eventDateObj.isSame(now, 'day')) {
-                             futureEvents.push({ date: dateKey, ...e });
-                        }
-                    } else if (e.time) { 
-                        const specificEventMoment = dayjs(`<span class="math-inline">\{dateKey\}T</span>{e.time}`);
-                        if (specificEventMoment.isAfter(now)) {
-                            futureEvents.push({ date: dateKey, ...e });
-                        }
-                    }
-                });
-            }
-            for (const dateKey in hebcalData) {
-                if (dateKey.endsWith('-loaded')) continue; 
-                hebcalData[dateKey].forEach(e => {
-                    const eventMoment = dayjs(e.eventType === 'candlelighting' ? e.dateFull : dateKey);
-                    let includeEvent = false;
-                    if (e.eventType === 'candlelighting') {
-                        if (eventMoment.isAfter(now)) includeEvent = true;
-                    } else if (e.eventType === 'parsha') {
-                        if (eventMoment.day() === 6 && (eventMoment.isAfter(now, 'day') || eventMoment.isSame(now, 'day'))) {
-                           includeEvent = true;
-                        }
-                    } else if (e.eventType === 'holiday') {
-                        if (eventMoment.isAfter(now, 'day') || eventMoment.isSame(now, 'day')) {
-                            includeEvent = true;
-                        }
-                    }
-                    if (includeEvent) {
-                         futureEvents.push({ 
-                            date: eventMoment.format('YYYY-MM-DD'), 
-                            timeSpecific: e.eventType === 'candlelighting' ? eventMoment.format('h:mm A') : null, ...e 
-                        });
-                    }
-                });
-            }
-            futureEvents.sort((a, b) => {
-                let dateA, dateB;
-                if (a.eventType === 'candlelighting') dateA = dayjs(a.dateFull);
-                else if (a.eventType === 'user' && !a.allday && a.time) dateA = dayjs(`<span class="math-inline">\{a\.date\}T</span>{a.time}`);
-                else dateA = dayjs(a.date).startOf('day');
-                if (b.eventType === 'candlelighting') dateB = dayjs(b.dateFull);
-                else if (b.eventType === 'user' && !b.allday && b.time) dateB = dayjs(`<span class="math-inline">\{b\.date\}T</span>{b.time}`);
-                else dateB = dayjs(b.date).startOf('day');
-                return dateA.unix() - dateB.unix();
-            });
-            upcomingEventsList.innerHTML = futureEvents.map(e => {
-                const eventDateObj = dayjs(e.eventType === 'candlelighting' ? e.dateFull : e.date);
-                const dayOfWeek = eventDateObj.format('dddd');
-                let details = e.title || "Event";
-                let itemClass = '';
-                if (e.eventType === 'parsha') {
-                    itemClass = 'upcoming-parsha-item'; if (e.hebrew) details += ` (${e.hebrew})`;
-                } else if (e.eventType === 'holiday') {
-                    itemClass = 'upcoming-holiday-item'; if (e.hebrew) details += ` (${e.hebrew})`;
-                    if (e.allday) details += ' (All day)';
-                } else if (e.eventType === 'candlelighting') {
-                    itemClass = 'upcoming-candlelighting-item';
-                } else { 
-                     if (e.allday) { details += ' (All day)'; } 
-                     else if (e.time) { details += ` at ${formatTo12Hour(e.time)}`; }
+                if (eventDateObj.isAfter(now, 'day') || eventDateObj.isSame(now, 'day')) {
+                    events[dateKey].forEach(e => {
+                        futureEvents.push({ date: dateKey, ...e, type: 'User Event' });
+                    });
                 }
-                return `<div class="upcoming-event-item <span class="math-inline">\{itemClass\}"\>
-<strong\></span>{dayOfWeek}, ${eventDateObj.format('MMMM D, YYYY')}</strong>: ${details}
-                            ${(e.eventType !== 'user' && e.link) ? ` <a href="${e.link}" target="_blank" rel="noopener noreferrer">(Details)</a>` : ''}
+            }
+             // Add Parsha events
+            for (const dateKey in parshaData) {
+                if (dateKey.endsWith('-loaded')) continue; // Skip loader flags
+
+                const eventDateObj = dayjs(dateKey);
+                // Only include Parshiot that are on or after today AND are on a Saturday
+                if ((eventDateObj.isAfter(now, 'day') || eventDateObj.isSame(now, 'day')) && eventDateObj.day() === 6) {
+                    parshaData[dateKey].forEach(e => {
+                        futureEvents.push({ date: dateKey, ...e, type: 'Parsha' });
+                    });
+                }
+            }
+
+
+            futureEvents.sort((a, b) => dayjs(a.date).unix() - dayjs(b.date).unix());
+
+            upcomingEventsList.innerHTML = futureEvents.map(e => {
+                const eventDateObj = dayjs(e.date);
+                const dayOfWeek = eventDateObj.format('dddd');
+                let details = e.title;
+                if (e.allday) {
+                    details += ' (All day)';
+                    if (e.isParsha && e.hebrew) details += ` - ${e.hebrew}`;
+                } else if (e.time) {
+                    details += ` at ${formatTo12Hour(e.time)}`;
+                }
+
+                return `<div class="upcoming-event-item">
+                            <strong>${dayOfWeek}, ${e.date}</strong>: ${details}
+                            ${e.isParsha && e.link ? ` <a href="${e.link}" target="_blank">(Details)</a>` : ''}
                         </div>`;
             }).join('');
-            
-            parshaAndCandlesVisibleInList = true; 
-            holidaysVisibleInList = true; 
-            const toggleParshaCandlesBtn = document.getElementById('toggle-parsha-candles-btn');
-            if (toggleParshaCandlesBtn) toggleParshaCandlesBtn.textContent = 'Hide Parsha/Candles';
-            const toggleHolidaysBtn = document.getElementById('toggle-holidays-btn');
-            if (toggleHolidaysBtn) toggleHolidaysBtn.textContent = 'Hide Holidays';
-            upcomingEventsList.querySelectorAll('.upcoming-parsha-item, .upcoming-candlelighting-item').forEach(item => {
-                item.style.display = ''; 
-            });
-            upcomingEventsList.querySelectorAll('.upcoming-holiday-item').forEach(item => {
-                item.style.display = ''; 
-            });
+
             upcomingEventsModal.style.display = 'block';
         }
 
-        function closeUpcomingModal() { upcomingEventsModal.style.display = 'none'; }
+        function closeUpcomingModal() {
+            upcomingEventsModal.style.display = 'none';
+        }
 
         document.getElementById('prev-month').onclick = () => {
-            currentDate = currentDate.subtract(1, 'month'); renderCalendar(currentDate);
+            currentDate = currentDate.subtract(1, 'month');
+            renderCalendar(currentDate);
         };
+
         document.getElementById('next-month').onclick = () => {
-            currentDate = currentDate.add(1, 'month'); renderCalendar(currentDate);
+            currentDate = currentDate.add(1, 'month');
+            renderCalendar(currentDate);
         };
+
+        // Initial render
         renderCalendar(currentDate);
     </script>
 </body>
 </html>
-
